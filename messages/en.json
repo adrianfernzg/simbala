@@ -1,0 +1,82 @@
+{
+  "navigation": {
+    "home": "Home",
+    "products": "Products",
+    "blog": "Blog",
+    "contact": "Contact",
+    "account": "My account",
+    "cart": "Cart",
+    "login": "Sign in",
+    "logout": "Sign out",
+    "register": "Register"
+  },
+  "product": {
+    "addToCart": "Add to cart",
+    "basePrice": "Base price",
+    "total": "Total",
+    "extras": "Extras & options",
+    "customize": "Customize",
+    "outOfStock": "Out of stock"
+  },
+  "cart": {
+    "title": "Your cart",
+    "empty": "Your cart is empty",
+    "checkout": "Proceed to checkout",
+    "remove": "Remove",
+    "quantity": "Quantity",
+    "subtotal": "Subtotal",
+    "total": "Total"
+  },
+  "checkout": {
+    "title": "Checkout",
+    "shippingInfo": "Shipping information",
+    "pickupInStore": "Pick up in store",
+    "payWithCard": "Pay with card",
+    "name": "Full name",
+    "email": "Email",
+    "phone": "Phone",
+    "address": "Address",
+    "city": "City",
+    "zip": "ZIP code",
+    "country": "Country"
+  },
+  "orders": {
+    "title": "My orders",
+    "empty": "You have no orders yet",
+    "status": {
+      "PENDING": "Pending",
+      "PROCESSING": "Processing",
+      "SHIPPED": "Shipped",
+      "DELIVERED": "Delivered",
+      "CANCELLED": "Cancelled"
+    },
+    "orderNumber": "Order #",
+    "date": "Date",
+    "total": "Total"
+  },
+  "auth": {
+    "login": "Sign in",
+    "register": "Create account",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "name": "Name",
+    "continueWithGoogle": "Continue with Google",
+    "alreadyHaveAccount": "Already have an account?",
+    "dontHaveAccount": "Don't have an account?",
+    "forgotPassword": "Forgot your password?"
+  },
+  "errors": {
+    "general": "Something went wrong. Please try again.",
+    "notFound": "Page not found",
+    "unauthorized": "You don't have access to this page"
+  },
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "back": "Back",
+    "seeAll": "See all"
+  }
+}

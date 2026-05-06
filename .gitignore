@@ -1,0 +1,40 @@
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Next.js
+.next/
+out/
+build/
+
+# Prisma
+prisma/migrations/dev_*
+
+# Environment variables — NEVER commit
+.env
+.env.local
+.env.development
+.env.production
+.env*.local
+
+# Payload
+payload-types.ts
+
+# Misc
+.DS_Store
+*.pem
+Thumbs.db
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Claude
+CLAUDE.md
+.claude/
