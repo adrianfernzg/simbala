@@ -1,7 +1,6 @@
 import { buildConfig } from 'payload'
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
-import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 import { Products } from './collections/Products'
 import { Categories } from './collections/Categories'
 import { Orders } from './collections/Orders'
@@ -22,18 +21,6 @@ export default buildConfig({
   db: postgresAdapter({
     pool: {
       connectionString: process.env.DATABASE_URL,
-    },
-  }),
-  email: nodemailerAdapter({
-    defaultFromAddress: process.env.EMAIL_FROM ?? 'noreply@example.com',
-    defaultFromName: 'Recreativas',
-    transportOptions: {
-      host: process.env.EMAIL_HOST,
-      port: Number(process.env.EMAIL_PORT ?? 587),
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
     },
   }),
   secret: process.env.PAYLOAD_SECRET!,

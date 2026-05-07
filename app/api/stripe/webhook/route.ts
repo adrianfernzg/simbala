@@ -21,14 +21,14 @@ export async function POST(req: NextRequest) {
   }
 
   if (event.type === 'checkout.session.completed') {
-    const session = event.data.object as Stripe.CheckoutSession
+    const session = event.data.object as Stripe.Checkout.Session
     await handleCheckoutCompleted(session)
   }
 
   return NextResponse.json({ received: true })
 }
 
-async function handleCheckoutCompleted(session: Stripe.CheckoutSession) {
+async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   const { userId, cartData, isPickup, shippingAddress } = session.metadata!
   const cart = JSON.parse(cartData) as Array<{
     productId: string
