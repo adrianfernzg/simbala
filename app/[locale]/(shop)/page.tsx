@@ -15,30 +15,38 @@ export default async function HomePage({ params }: Props) {
     where: { published: true },
     include: { category: true },
     orderBy: { createdAt: 'desc' },
-    take: 6,
+    take: 3,
   })
 
   return (
     <>
-      {/* Hero */}
-      <section className="bg-zinc-900 px-4 py-24 text-white sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-3xl text-center">
-          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-            Máquinas recreativas de calidad
+      {/* ── Hero ─────────────────────────────────────────────── */}
+      <section className="relative overflow-hidden border-b border-border px-4 py-32 sm:px-6 lg:px-8">
+        {/* Fondo con gradiente sutil */}
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(212,160,23,0.08),transparent)]" />
+
+        <div className="relative mx-auto max-w-4xl text-center">
+          <p className="text-xs font-medium uppercase tracking-[0.4em] text-gold">
+            The Collection
+          </p>
+          <h1 className="mt-5 text-5xl font-bold leading-tight tracking-tight text-text-primary sm:text-6xl lg:text-7xl">
+            Timeless Entertainment,{' '}
+            <span className="text-gold">Modern Craftsmanship.</span>
           </h1>
-          <p className="mt-6 text-lg text-zinc-300">
-            Amplio catálogo de máquinas recreativas. Envío a toda España o recogida en nuestro taller.
+          <p className="mx-auto mt-7 max-w-2xl text-base leading-relaxed text-text-secondary">
+            Explore our curated selection of bespoke arcade cabinets, where retro
+            nostalgia meets high-end Spanish cabinetry.
           </p>
           <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Link
               href={`/${locale}/products`}
-              className="rounded-md bg-white px-6 py-3 text-base font-medium text-zinc-900 hover:bg-zinc-100"
+              className="border border-gold bg-gold px-8 py-3.5 text-xs font-semibold uppercase tracking-widest text-black hover:bg-gold-light transition-colors"
             >
-              {t('products')}
+              Shop Now
             </Link>
             <Link
               href={`/${locale}/contact`}
-              className="rounded-md border border-zinc-600 px-6 py-3 text-base font-medium text-white hover:bg-zinc-800"
+              className="border border-border px-8 py-3.5 text-xs font-semibold uppercase tracking-widest text-text-secondary hover:border-gold hover:text-gold transition-all"
             >
               {t('contact')}
             </Link>
@@ -46,70 +54,87 @@ export default async function HomePage({ params }: Props) {
         </div>
       </section>
 
-      {/* Productos destacados */}
-      {featuredProducts.length > 0 && (
-        <section className="px-4 py-16 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-7xl">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-zinc-900">Productos destacados</h2>
-              <Link
-                href={`/${locale}/products`}
-                className="text-sm font-medium text-zinc-600 hover:text-zinc-900"
-              >
-                Ver todos →
-              </Link>
+      {/* ── Productos destacados ──────────────────────────────── */}
+      <section className="px-4 py-20 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-12 flex items-end justify-between">
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.4em] text-gold">Our Models</p>
+              <h2 className="mt-2 text-3xl font-bold text-text-primary">Featured Collection</h2>
             </div>
-            <ul className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <Link
+              href={`/${locale}/products`}
+              className="text-xs uppercase tracking-widest text-text-secondary hover:text-gold transition-colors"
+            >
+              View All →
+            </Link>
+          </div>
+
+          {featuredProducts.length > 0 ? (
+            <ul className="grid grid-cols-1 gap-px bg-border sm:grid-cols-2 lg:grid-cols-3">
               {featuredProducts.map((product) => (
-                <li key={product.id}>
+                <li key={product.id} className="bg-bg">
                   <ProductCard product={product} locale={locale} />
                 </li>
               ))}
             </ul>
-          </div>
-        </section>
-      )}
+          ) : (
+            <div className="border border-border py-24 text-center">
+              <p className="text-xs uppercase tracking-widest text-text-muted">
+                Catálogo próximamente
+              </p>
+            </div>
+          )}
+        </div>
+      </section>
 
-      {/* CTA — sin productos aún */}
-      {featuredProducts.length === 0 && (
-        <section className="px-4 py-24 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-7xl text-center">
-            <h2 className="text-2xl font-bold text-zinc-900">Catálogo próximamente</h2>
-            <p className="mt-4 text-zinc-500">
-              Estamos preparando el catálogo. Vuelve pronto.
-            </p>
-          </div>
-        </section>
-      )}
-
-      {/* Ventajas */}
-      <section className="border-t border-zinc-200 bg-zinc-50 px-4 py-16 sm:px-6 lg:px-8">
+      {/* ── Ventajas ─────────────────────────────────────────── */}
+      <section className="border-t border-border px-4 py-20 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
-          <ul className="grid grid-cols-1 gap-8 sm:grid-cols-3">
+          <ul className="grid grid-cols-1 divide-y divide-border sm:grid-cols-3 sm:divide-x sm:divide-y-0">
             {[
               {
-                icon: '🚚',
+                number: '01',
                 title: 'Envío a toda España',
-                desc: 'Gestionamos el envío desde nuestro taller hasta tu puerta.',
+                desc: 'Gestionamos el transporte desde nuestro taller hasta tu puerta.',
               },
               {
-                icon: '🔧',
+                number: '02',
                 title: 'Recogida en taller',
-                desc: 'Pasa por nuestro taller y recoge tu máquina sin coste adicional.',
+                desc: 'Visita nuestro taller en Valencia y recoge tu máquina sin coste.',
               },
               {
-                icon: '🛡️',
+                number: '03',
                 title: 'Compra segura',
                 desc: 'Pago 100% seguro con Stripe. Garantía en todos los productos.',
               },
-            ].map(({ icon, title, desc }) => (
-              <li key={title} className="flex flex-col items-center text-center">
-                <span className="text-4xl">{icon}</span>
-                <h3 className="mt-4 text-base font-semibold text-zinc-900">{title}</h3>
-                <p className="mt-2 text-sm text-zinc-500">{desc}</p>
+            ].map(({ number, title, desc }) => (
+              <li key={number} className="flex flex-col px-8 py-10 first:pl-0 last:pr-0 sm:px-10">
+                <span className="text-xs font-medium tracking-widest text-gold">{number}</span>
+                <h3 className="mt-3 text-base font-semibold text-text-primary">{title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-text-secondary">{desc}</p>
               </li>
             ))}
           </ul>
+        </div>
+      </section>
+
+      {/* ── CTA final ────────────────────────────────────────── */}
+      <section className="border-t border-border px-4 py-24 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-3xl text-center">
+          <p className="text-xs uppercase tracking-[0.4em] text-gold">Custom Build</p>
+          <h2 className="mt-4 text-4xl font-bold text-text-primary">
+            Engineer your ultimate arcade cabinet
+          </h2>
+          <p className="mt-5 text-base text-text-secondary">
+            Handcrafted in Spain. Typical delivery: 8–12 weeks.
+          </p>
+          <Link
+            href={`/${locale}/contact`}
+            className="mt-8 inline-block border border-gold px-8 py-3.5 text-xs font-semibold uppercase tracking-widest text-gold hover:bg-gold hover:text-black transition-all duration-200"
+          >
+            Book a Virtual Tour
+          </Link>
         </div>
       </section>
     </>

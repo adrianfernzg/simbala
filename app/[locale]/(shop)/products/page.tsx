@@ -11,17 +11,16 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params
   return {
-    title: locale === 'es' ? 'Productos — Catálogo' : 'Products — Catalogue',
+    title: locale === 'es' ? 'Modelos' : 'Models',
     description: locale === 'es'
-      ? 'Catálogo completo de máquinas recreativas.'
-      : 'Full catalogue of arcade machines.',
+      ? 'Catálogo completo de máquinas recreativas artesanales Simbala Arcade.'
+      : 'Full catalogue of Simbala Arcade handcrafted arcade machines.',
   }
 }
 
 export default async function ProductsPage({ params, searchParams }: Props) {
   const { locale } = await params
   const { categoria, pagina } = await searchParams
-  const t = await getTranslations({ locale, namespace: 'navigation' })
 
   const page = Math.max(1, Number(pagina ?? 1))
   const pageSize = 12
@@ -45,32 +44,44 @@ export default async function ProductsPage({ params, searchParams }: Props) {
   ])
 
   const totalPages = Math.ceil(total / pageSize)
+  const t = await getTranslations({ locale, namespace: 'navigation' })
 
   return (
-    <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-      <h1 className="text-3xl font-bold text-zinc-900">{t('products')}</h1>
+    <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
 
-      {/* Filtro por categoría */}
+      {/* Encabezado */}
+      <div className="border-b border-border pb-10">
+        <p className="text-[10px] uppercase tracking-[0.4em] text-gold">The Collection</p>
+        <h1 className="mt-3 text-4xl font-bold text-text-primary">{t('products')}</h1>
+        <p className="mt-3 text-sm text-text-secondary">
+          {total} {total === 1 ? 'modelo disponible' : 'modelos disponibles'}
+        </p>
+      </div>
+
+      {/* Filtros */}
       {categories.length > 0 && (
-        <nav aria-label="Filtro por categoría" className="mt-6 flex flex-wrap gap-2">
+        <nav aria-label="Filtro por categoría" className="mt-8 flex flex-wrap items-center gap-2">
+          <span className="text-[10px] uppercase tracking-widest text-text-muted mr-2">Filter:</span>
           <a
             href={`/${locale}/products`}
             className={[
-              'rounded-full px-4 py-1.5 text-sm font-medium transition-colors',
-              !categoria ? 'bg-zinc-900 text-white' : 'border border-zinc-300 text-zinc-600 hover:bg-zinc-50',
+              'px-4 py-1.5 text-xs font-medium uppercase tracking-widest transition-all duration-200',
+              !categoria
+                ? 'bg-gold text-black'
+                : 'border border-border text-text-secondary hover:border-gold hover:text-gold',
             ].join(' ')}
           >
-            Todos
+            All
           </a>
           {categories.map((cat) => (
             <a
               key={cat.id}
               href={`/${locale}/products?categoria=${cat.slug}`}
               className={[
-                'rounded-full px-4 py-1.5 text-sm font-medium transition-colors',
+                'px-4 py-1.5 text-xs font-medium uppercase tracking-widest transition-all duration-200',
                 categoria === cat.slug
-                  ? 'bg-zinc-900 text-white'
-                  : 'border border-zinc-300 text-zinc-600 hover:bg-zinc-50',
+                  ? 'bg-gold text-black'
+                  : 'border border-border text-text-secondary hover:border-gold hover:text-gold',
               ].join(' ')}
             >
               {cat.name}
@@ -79,29 +90,28 @@ export default async function ProductsPage({ params, searchParams }: Props) {
         </nav>
       )}
 
-      {/* Grid de productos */}
+      {/* Grid */}
       {products.length > 0 ? (
         <>
-          <ul className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <ul className="mt-10 grid grid-cols-1 gap-px bg-border sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {products.map((product) => (
-              <li key={product.id}>
+              <li key={product.id} className="bg-bg">
                 <ProductCard product={product} locale={locale} />
               </li>
             ))}
           </ul>
 
-          {/* Paginación */}
           {totalPages > 1 && (
-            <nav aria-label="Paginación" className="mt-12 flex justify-center gap-2">
+            <nav aria-label="Paginación" className="mt-14 flex justify-center gap-1">
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
                 <a
                   key={p}
                   href={`/${locale}/products?${categoria ? `categoria=${categoria}&` : ''}pagina=${p}`}
                   className={[
-                    'flex h-9 w-9 items-center justify-center rounded-md text-sm font-medium transition-colors',
+                    'flex h-9 w-9 items-center justify-center text-xs font-medium uppercase tracking-wider transition-all',
                     p === page
-                      ? 'bg-zinc-900 text-white'
-                      : 'border border-zinc-300 text-zinc-600 hover:bg-zinc-50',
+                      ? 'bg-gold text-black'
+                      : 'border border-border text-text-secondary hover:border-gold hover:text-gold',
                   ].join(' ')}
                   aria-current={p === page ? 'page' : undefined}
                 >
@@ -112,8 +122,10 @@ export default async function ProductsPage({ params, searchParams }: Props) {
           )}
         </>
       ) : (
-        <div className="mt-16 text-center">
-          <p className="text-zinc-500">No hay productos disponibles todavía.</p>
+        <div className="mt-20 border border-border py-24 text-center">
+          <p className="text-xs uppercase tracking-widest text-text-muted">
+            No hay modelos disponibles todavía
+          </p>
         </div>
       )}
     </section>

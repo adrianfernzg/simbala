@@ -1,6 +1,6 @@
 import { forwardRef } from 'react'
 
-type Variant = 'primary' | 'secondary' | 'ghost' | 'danger'
+type Variant = 'gold' | 'outline' | 'ghost' | 'dark'
 type Size = 'sm' | 'md' | 'lg'
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -10,28 +10,28 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantClasses: Record<Variant, string> = {
-  primary: 'bg-zinc-900 text-white hover:bg-zinc-700 active:bg-zinc-800',
-  secondary: 'border border-zinc-300 text-zinc-900 hover:bg-zinc-50 active:bg-zinc-100',
-  ghost: 'text-zinc-600 hover:bg-zinc-100 active:bg-zinc-200',
-  danger: 'bg-red-600 text-white hover:bg-red-500 active:bg-red-700',
+  gold: 'bg-gold text-black font-semibold hover:bg-gold-light active:opacity-90',
+  outline: 'border border-gold text-gold hover:bg-gold hover:text-black',
+  ghost: 'text-text-secondary hover:text-gold hover:bg-surface-raised',
+  dark: 'bg-surface-raised border border-border text-text-primary hover:border-gold hover:text-gold',
 }
 
 const sizeClasses: Record<Size, string> = {
-  sm: 'px-3 py-1.5 text-sm',
-  md: 'px-4 py-2 text-sm',
-  lg: 'px-6 py-3 text-base',
+  sm: 'px-3 py-1.5 text-xs tracking-widest uppercase',
+  md: 'px-5 py-2.5 text-sm tracking-widest uppercase',
+  lg: 'px-8 py-3.5 text-sm tracking-widest uppercase',
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ variant = 'primary', size = 'md', loading, disabled, className = '', children, ...props }, ref) => {
+  ({ variant = 'gold', size = 'md', loading, disabled, className = '', children, ...props }, ref) => {
     return (
       <button
         ref={ref}
         disabled={disabled || loading}
         className={[
-          'inline-flex items-center justify-center gap-2 rounded-md font-medium transition-colors',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2',
-          'disabled:pointer-events-none disabled:opacity-50',
+          'inline-flex items-center justify-center gap-2 rounded-none transition-all duration-200',
+          'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold',
+          'disabled:pointer-events-none disabled:opacity-40',
           variantClasses[variant],
           sizeClasses[size],
           className,
