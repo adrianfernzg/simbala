@@ -22,16 +22,13 @@ export const BlogPosts: CollectionConfig = {
     {
       name: 'slug',
       type: 'text',
-      required: true,
       unique: true,
       hooks: {
         beforeValidate: [
-          ({ value, data }) =>
-            value ||
-            data?.title
-              ?.toLowerCase()
-              .replace(/\s+/g, '-')
-              .replace(/[^a-z0-9-]/g, ''),
+          ({ value, data }) => {
+            const raw = value || data?.title || ''
+            return raw.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+          },
         ],
       },
     },

@@ -3,12 +3,14 @@
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { usePathname } from 'next/navigation'
+import { CartBadge } from '@/components/shop/CartBadge'
 
 interface HeaderProps {
   locale: string
+  userName?: string | null
 }
 
-export function Header({ locale }: HeaderProps) {
+export function Header({ locale, userName }: HeaderProps) {
   const t = useTranslations('navigation')
   const pathname = usePathname()
 
@@ -69,15 +71,7 @@ export function Header({ locale }: HeaderProps) {
 
         {/* Acciones */}
         <div className="flex items-center gap-1">
-          <Link
-            href={`/${locale}/cart`}
-            aria-label={t('cart')}
-            className="relative p-2.5 text-text-secondary hover:text-gold transition-colors"
-          >
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
-            </svg>
-          </Link>
+          <CartBadge locale={locale} label={t('cart')} />
 
           <Link
             href={`/${locale}/account`}
@@ -89,12 +83,18 @@ export function Header({ locale }: HeaderProps) {
             </svg>
           </Link>
 
-          <Link
-            href={`/${locale}/login`}
-            className="ml-2 border border-gold px-4 py-2 text-xs font-medium tracking-widest uppercase text-gold hover:bg-gold hover:text-black transition-all duration-200"
-          >
-            {t('login')}
-          </Link>
+          {userName ? (
+            <span className="ml-2 hidden text-xs tracking-widest text-text-muted sm:block">
+              {userName.split(' ')[0]}
+            </span>
+          ) : (
+            <Link
+              href={`/${locale}/login`}
+              className="ml-2 border border-gold px-4 py-2 text-xs font-medium tracking-widest uppercase text-gold hover:bg-gold hover:text-black transition-all duration-200"
+            >
+              {t('login')}
+            </Link>
+          )}
         </div>
       </div>
     </header>

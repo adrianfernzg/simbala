@@ -3,6 +3,8 @@ import bcrypt from 'bcryptjs'
 import { db } from '@/lib/db'
 import { registerSchema } from '@/lib/validations/auth'
 import { ratelimit } from '@/lib/ratelimit'
+import { getPayload } from 'payload'
+import config from '@payload-config'
 
 export async function POST(req: Request) {
   const ip = req.headers.get('x-forwarded-for') ?? 'anonymous'
@@ -38,6 +40,23 @@ export async function POST(req: Request) {
     },
     select: { id: true, email: true, name: true },
   })
+
+  // Crear registro en Payload para que el admin lo vea en el panel
+  try {
+    const payload = await getPayload({ config })
+    await payload.create({
+      collection: 'clientes',
+      overrideAccess: true,
+      data: {
+        email: user.email,
+        name: user.name ?? '',
+        prismaUserId: user.id,
+        provider: 'credentials',
+      },
+    })
+  } catch {
+    // No bloquear el registro si falla el sync con Payload
+  }
 
   return NextResponse.json(user, { status: 201 })
 }

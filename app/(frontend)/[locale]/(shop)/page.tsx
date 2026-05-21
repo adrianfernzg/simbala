@@ -1,6 +1,6 @@
 import Link from 'next/link'
-import { getTranslations } from 'next-intl/server'
-import { db } from '@/lib/db'
+import { getPayload } from 'payload'
+import config from '@payload-config'
 import { ProductCard } from '@/components/shop/ProductCard'
 
 type Props = {
@@ -9,46 +9,48 @@ type Props = {
 
 export default async function HomePage({ params }: Props) {
   const { locale } = await params
-  const t = await getTranslations({ locale, namespace: 'navigation' })
 
-  const featuredProducts = await db.product.findMany({
-    where: { published: true },
-    include: { category: true },
-    orderBy: { createdAt: 'desc' },
-    take: 3,
+  const payload = await getPayload({ config })
+
+  const { docs: featuredProducts } = await payload.find({
+    collection: 'products',
+    where: { published: { equals: true } },
+    sort: '-createdAt',
+    limit: 3,
+    depth: 1,
+    locale: locale as 'es' | 'en',
   })
 
   return (
     <>
       {/* ── Hero ─────────────────────────────────────────────── */}
       <section className="relative overflow-hidden border-b border-border px-4 py-32 sm:px-6 lg:px-8">
-        {/* Fondo con gradiente sutil */}
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(212,160,23,0.08),transparent)]" />
 
         <div className="relative mx-auto max-w-4xl text-center">
           <p className="text-xs font-medium uppercase tracking-[0.4em] text-gold">
-            The Collection
+            La Colección
           </p>
           <h1 className="mt-5 text-5xl font-bold leading-tight tracking-tight text-text-primary sm:text-6xl lg:text-7xl">
-            Timeless Entertainment,{' '}
-            <span className="text-gold">Modern Craftsmanship.</span>
+            Entretenimiento eterno,{' '}
+            <span className="text-gold">artesanía moderna.</span>
           </h1>
           <p className="mx-auto mt-7 max-w-2xl text-base leading-relaxed text-text-secondary">
-            Explore our curated selection of bespoke arcade cabinets, where retro
-            nostalgia meets high-end Spanish cabinetry.
+            Máquinas recreativas artesanales de alta gama. Fabricadas en Valencia con
+            materiales premium. Envío a toda España o recogida en taller.
           </p>
           <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Link
               href={`/${locale}/products`}
               className="border border-gold bg-gold px-8 py-3.5 text-xs font-semibold uppercase tracking-widest text-black hover:bg-gold-light transition-colors"
             >
-              Shop Now
+              Ver catálogo
             </Link>
             <Link
               href={`/${locale}/contact`}
               className="border border-border px-8 py-3.5 text-xs font-semibold uppercase tracking-widest text-text-secondary hover:border-gold hover:text-gold transition-all"
             >
-              {t('contact')}
+              Contacto
             </Link>
           </div>
         </div>
@@ -59,14 +61,14 @@ export default async function HomePage({ params }: Props) {
         <div className="mx-auto max-w-7xl">
           <div className="mb-12 flex items-end justify-between">
             <div>
-              <p className="text-[10px] uppercase tracking-[0.4em] text-gold">Our Models</p>
-              <h2 className="mt-2 text-3xl font-bold text-text-primary">Featured Collection</h2>
+              <p className="text-[10px] uppercase tracking-[0.4em] text-gold">Nuestros modelos</p>
+              <h2 className="mt-2 text-3xl font-bold text-text-primary">Colección destacada</h2>
             </div>
             <Link
               href={`/${locale}/products`}
               className="text-xs uppercase tracking-widest text-text-secondary hover:text-gold transition-colors"
             >
-              View All →
+              Ver todos →
             </Link>
           </div>
 
@@ -74,7 +76,7 @@ export default async function HomePage({ params }: Props) {
             <ul className="grid grid-cols-1 gap-px bg-border sm:grid-cols-2 lg:grid-cols-3">
               {featuredProducts.map((product) => (
                 <li key={product.id} className="bg-bg">
-                  <ProductCard product={product} locale={locale} />
+                  <ProductCard product={product as Parameters<typeof ProductCard>[0]['product']} locale={locale} />
                 </li>
               ))}
             </ul>
@@ -101,7 +103,7 @@ export default async function HomePage({ params }: Props) {
               {
                 number: '02',
                 title: 'Recogida en taller',
-                desc: 'Visita nuestro taller en Valencia y recoge tu máquina sin coste.',
+                desc: 'Visita nuestro taller en Valencia y recoge tu máquina sin coste adicional.',
               },
               {
                 number: '03',
@@ -122,18 +124,18 @@ export default async function HomePage({ params }: Props) {
       {/* ── CTA final ────────────────────────────────────────── */}
       <section className="border-t border-border px-4 py-24 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">
-          <p className="text-xs uppercase tracking-[0.4em] text-gold">Custom Build</p>
+          <p className="text-xs uppercase tracking-[0.4em] text-gold">Personalización</p>
           <h2 className="mt-4 text-4xl font-bold text-text-primary">
-            Engineer your ultimate arcade cabinet
+            Diseña tu máquina recreativa ideal
           </h2>
           <p className="mt-5 text-base text-text-secondary">
-            Handcrafted in Spain. Typical delivery: 8–12 weeks.
+            Fabricada a mano en Valencia. Plazo habitual de entrega: 8–12 semanas.
           </p>
           <Link
             href={`/${locale}/contact`}
             className="mt-8 inline-block border border-gold px-8 py-3.5 text-xs font-semibold uppercase tracking-widest text-gold hover:bg-gold hover:text-black transition-all duration-200"
           >
-            Book a Virtual Tour
+            Solicitar información
           </Link>
         </div>
       </section>

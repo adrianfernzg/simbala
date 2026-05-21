@@ -3,8 +3,15 @@ import { z } from 'zod'
 export const checkoutSchema = z.object({
   items: z.array(
     z.object({
-      productId: z.string().cuid(),
-      extraIds: z.array(z.string().cuid()),
+      productId: z.string().min(1),
+      extras: z
+        .array(
+          z.object({
+            extraId: z.string().min(1),
+            value: z.string().optional(),
+          })
+        )
+        .default([]),
       quantity: z.number().int().min(1).max(100),
     })
   ),

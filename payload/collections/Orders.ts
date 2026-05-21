@@ -4,20 +4,27 @@ export const Orders: CollectionConfig = {
   slug: 'orders',
   admin: {
     useAsTitle: 'id',
-    defaultColumns: ['id', 'status', 'totalAmount', 'createdAt'],
+    defaultColumns: ['id', 'status', 'customer__name', 'totalAmount', 'isPickup', 'createdAt'],
+    description: 'Pedidos recibidos vía Stripe. Cambia el estado desde la barra lateral. Puedes añadir notas internas.',
   },
   access: {
-    read: ({ req }) => req.user?.role === 'admin',
+    read: ({ req }) => {
+      if (req.user?.role === 'admin') return true
+      if (!req.user) return false
+      return { userId: { equals: req.user.id } }
+    },
     create: () => false,
     update: ({ req }) => req.user?.role === 'admin',
     delete: () => false,
   },
   fields: [
+    // ─── Sidebar ──────────────────────────────────────────────
     {
       name: 'status',
       type: 'select',
       required: true,
       defaultValue: 'PENDING',
+      admin: { position: 'sidebar' },
       options: [
         { label: 'Pendiente', value: 'PENDING' },
         { label: 'En proceso', value: 'PROCESSING' },
@@ -25,66 +32,91 @@ export const Orders: CollectionConfig = {
         { label: 'Entregado', value: 'DELIVERED' },
         { label: 'Cancelado', value: 'CANCELLED' },
       ],
-      admin: { position: 'sidebar' },
-    },
-    {
-      name: 'userId',
-      type: 'text',
-      required: true,
-    },
-    {
-      name: 'stripePaymentId',
-      type: 'text',
     },
     {
       name: 'totalAmount',
+      label: 'Total (€)',
       type: 'number',
       required: true,
-    },
-    {
-      name: 'shippingName',
-      type: 'text',
-      required: true,
-    },
-    {
-      name: 'shippingEmail',
-      type: 'email',
-      required: true,
-    },
-    {
-      name: 'shippingPhone',
-      type: 'text',
+      admin: { position: 'sidebar', readOnly: true },
     },
     {
       name: 'isPickup',
+      label: 'Recogida en taller',
       type: 'checkbox',
       defaultValue: false,
-      admin: { description: 'Recogida en taller' },
+      admin: { position: 'sidebar', readOnly: true },
     },
     {
-      name: 'shippingAddress',
+      name: 'stripePaymentId',
+      label: 'ID de pago Stripe',
       type: 'text',
+      admin: { position: 'sidebar', readOnly: true },
     },
     {
-      name: 'shippingCity',
+      name: 'userId',
+      label: 'ID de usuario',
       type: 'text',
+      admin: { position: 'sidebar', readOnly: true },
     },
+
+    // ─── Cliente ─────────────────────────────────────────────
     {
-      name: 'shippingCountry',
-      type: 'text',
+      name: 'customer',
+      type: 'group',
+      label: 'Datos del cliente',
+      fields: [
+        { name: 'name', label: 'Nombre', type: 'text', admin: { readOnly: true } },
+        { name: 'email', label: 'Email', type: 'email', admin: { readOnly: true } },
+        { name: 'phone', label: 'Teléfono', type: 'text', admin: { readOnly: true } },
+      ],
     },
+
+    // ─── Dirección de envío ───────────────────────────────────
     {
-      name: 'shippingZip',
-      type: 'text',
+      name: 'shipping',
+      type: 'group',
+      label: 'Dirección de envío',
+      admin: { condition: (data) => !data?.isPickup },
+      fields: [
+        { name: 'address', label: 'Dirección', type: 'text', admin: { readOnly: true } },
+        { name: 'city', label: 'Ciudad', type: 'text', admin: { readOnly: true } },
+        { name: 'zip', label: 'Código postal', type: 'text', admin: { readOnly: true } },
+        { name: 'country', label: 'País', type: 'text', admin: { readOnly: true } },
+      ],
     },
+
+    // ─── Productos ────────────────────────────────────────────
     {
-      name: 'invoiceUrl',
-      type: 'text',
-      admin: { description: 'URL de la factura proforma' },
+      name: 'items',
+      type: 'array',
+      label: 'Productos del pedido',
+      admin: { readOnly: true },
+      fields: [
+        { name: 'productId', label: 'ID Producto', type: 'text' },
+        { name: 'productName', label: 'Producto', type: 'text' },
+        { name: 'quantity', label: 'Cantidad', type: 'number' },
+        { name: 'basePrice', label: 'Precio base (€)', type: 'number' },
+        { name: 'totalPrice', label: 'Total línea (€)', type: 'number' },
+        {
+          name: 'extras',
+          type: 'array',
+          label: 'Extras',
+          fields: [
+            { name: 'extraName', label: 'Extra', type: 'text' },
+            { name: 'price', label: 'Precio (€)', type: 'number' },
+            { name: 'value', label: 'Valor', type: 'text' },
+          ],
+        },
+      ],
     },
+
+    // ─── Notas internas (editable) ────────────────────────────
     {
       name: 'notes',
       type: 'textarea',
+      label: 'Notas internas',
+      admin: { description: 'Solo visibles para el administrador' },
     },
   ],
 }

@@ -5,9 +5,12 @@ import { PrismaAdapter } from '@auth/prisma-adapter'
 import bcrypt from 'bcryptjs'
 import { db } from '@/lib/db'
 import { loginSchema } from '@/lib/validations/auth'
+import { getPayload } from 'payload'
+import config from '@payload-config'
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(db),
+  trustHost: true,
   session: { strategy: 'jwt' },
   pages: {
     signIn: '/login',
@@ -65,6 +68,26 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.role = token.role as string
       }
       return session
+    },
+  },
+  events: {
+    // Se dispara cuando un usuario de OAuth se registra por primera vez
+    async createUser({ user }) {
+      try {
+        const payload = await getPayload({ config })
+        await payload.create({
+          collection: 'clientes',
+          overrideAccess: true,
+          data: {
+            email: user.email!,
+            name: user.name ?? '',
+            prismaUserId: user.id!,
+            provider: 'google',
+          },
+        })
+      } catch {
+        // No bloquear el login si falla el sync
+      }
     },
   },
 })

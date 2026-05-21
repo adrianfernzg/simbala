@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
-import { getTranslations } from 'next-intl/server'
-import { db } from '@/lib/db'
+import type { Where } from 'payload'
+import { getPayload } from 'payload'
+import config from '@payload-config'
 import { ProductCard } from '@/components/shop/ProductCard'
 
 type Props = {
@@ -25,43 +26,48 @@ export default async function ProductsPage({ params, searchParams }: Props) {
   const page = Math.max(1, Number(pagina ?? 1))
   const pageSize = 12
 
-  const categories = await db.category.findMany({ orderBy: { name: 'asc' } })
+  const payload = await getPayload({ config })
 
-  const where = {
-    published: true,
-    ...(categoria ? { category: { slug: categoria } } : {}),
+  const { docs: categories } = await payload.find({
+    collection: 'categories',
+    limit: 100,
+    locale: locale as 'es' | 'en',
+  })
+
+  const where: Where = { published: { equals: true } }
+  if (categoria) {
+    where['category.slug'] = { equals: categoria }
   }
 
-  const [products, total] = await Promise.all([
-    db.product.findMany({
-      where,
-      include: { category: true },
-      orderBy: { createdAt: 'desc' },
-      skip: (page - 1) * pageSize,
-      take: pageSize,
-    }),
-    db.product.count({ where }),
-  ])
+  const { docs: products, totalDocs } = await payload.find({
+    collection: 'products',
+    where,
+    sort: '-createdAt',
+    page,
+    limit: pageSize,
+    depth: 1,
+    locale: locale as 'es' | 'en',
+  })
 
-  const totalPages = Math.ceil(total / pageSize)
-  const t = await getTranslations({ locale, namespace: 'navigation' })
+  const totalPages = Math.ceil(totalDocs / pageSize)
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-
-      {/* Encabezado */}
       <div className="border-b border-border pb-10">
-        <p className="text-[10px] uppercase tracking-[0.4em] text-gold">The Collection</p>
-        <h1 className="mt-3 text-4xl font-bold text-text-primary">{t('products')}</h1>
+        <p className="text-[10px] uppercase tracking-[0.4em] text-gold">La Colección</p>
+        <h1 className="mt-3 text-4xl font-bold text-text-primary">
+          {locale === 'es' ? 'Modelos' : 'Models'}
+        </h1>
         <p className="mt-3 text-sm text-text-secondary">
-          {total} {total === 1 ? 'modelo disponible' : 'modelos disponibles'}
+          {totalDocs} {totalDocs === 1 ? 'modelo disponible' : 'modelos disponibles'}
         </p>
       </div>
 
-      {/* Filtros */}
       {categories.length > 0 && (
         <nav aria-label="Filtro por categoría" className="mt-8 flex flex-wrap items-center gap-2">
-          <span className="text-[10px] uppercase tracking-widest text-text-muted mr-2">Filter:</span>
+          <span className="text-[10px] uppercase tracking-widest text-text-muted mr-2">
+            {locale === 'es' ? 'Filtrar:' : 'Filter:'}
+          </span>
           <a
             href={`/${locale}/products`}
             className={[
@@ -71,7 +77,7 @@ export default async function ProductsPage({ params, searchParams }: Props) {
                 : 'border border-border text-text-secondary hover:border-gold hover:text-gold',
             ].join(' ')}
           >
-            All
+            {locale === 'es' ? 'Todos' : 'All'}
           </a>
           {categories.map((cat) => (
             <a
@@ -84,19 +90,18 @@ export default async function ProductsPage({ params, searchParams }: Props) {
                   : 'border border-border text-text-secondary hover:border-gold hover:text-gold',
               ].join(' ')}
             >
-              {cat.name}
+              {cat.name as string}
             </a>
           ))}
         </nav>
       )}
 
-      {/* Grid */}
       {products.length > 0 ? (
         <>
           <ul className="mt-10 grid grid-cols-1 gap-px bg-border sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {products.map((product) => (
               <li key={product.id} className="bg-bg">
-                <ProductCard product={product} locale={locale} />
+                <ProductCard product={product as Parameters<typeof ProductCard>[0]['product']} locale={locale} />
               </li>
             ))}
           </ul>

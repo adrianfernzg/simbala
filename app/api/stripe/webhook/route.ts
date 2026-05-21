@@ -1,7 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
-import { db } from '@/lib/db'
+import { getPayload } from 'payload'
+import config from '@payload-config'
+import { sendOrderConfirmation } from '@/lib/email'
 import type Stripe from 'stripe'
+
+type ExtraSnapshot = {
+  extraId: string
+  extraName: string
+  price: number
+  value?: string
+}
+
+type CartDataItem = {
+  productId: string
+  productName: string
+  quantity: number
+  unitPrice: number
+  extraSnapshots: ExtraSnapshot[]
+}
 
 export async function POST(req: NextRequest) {
   const body = await req.text()
@@ -30,64 +47,87 @@ export async function POST(req: NextRequest) {
 
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   const { userId, cartData, isPickup, shippingAddress } = session.metadata!
-  const cart = JSON.parse(cartData) as Array<{
-    productId: string
-    extraIds: string[]
-    quantity: number
-    unitPrice: number
-  }>
+  const cart = JSON.parse(cartData) as CartDataItem[]
   const shipping = JSON.parse(shippingAddress) as {
-    name?: string
-    phone?: string
-    address?: string
-    city?: string
-    country?: string
-    zip?: string
+    name?: string; phone?: string; address?: string
+    city?: string; country?: string; zip?: string
   }
 
-  const existingOrder = await db.order.findUnique({
-    where: { stripePaymentId: session.payment_intent as string },
-  })
-  if (existingOrder) return
+  const payload = await getPayload({ config })
 
-  await db.order.create({
+  // Idempotencia — no procesar el mismo pago dos veces
+  const existing = await payload.find({
+    collection: 'orders',
+    where: { stripePaymentId: { equals: session.payment_intent as string } },
+    limit: 1,
+    overrideAccess: true,
+  })
+  if (existing.docs.length > 0) return
+
+  const pickupFlag = isPickup === 'true'
+  const customerEmail = session.customer_details?.email ?? ''
+  const customerName = session.customer_details?.name ?? shipping.name ?? ''
+  const totalAmount = (session.amount_total ?? 0) / 100
+
+  const orderItems = cart.map((item) => ({
+    productId: item.productId,
+    productName: item.productName,
+    quantity: item.quantity,
+    basePrice: Number(
+      (item.unitPrice - item.extraSnapshots.reduce((s, e) => s + e.price, 0)).toFixed(2)
+    ),
+    totalPrice: Number((item.unitPrice * item.quantity).toFixed(2)),
+    extras: item.extraSnapshots.map((extra) => ({
+      extraName: extra.extraName,
+      price: extra.price,
+      value: extra.value ?? '',
+    })),
+  }))
+
+  const order = await payload.create({
+    collection: 'orders',
+    overrideAccess: true,
     data: {
       userId,
       stripePaymentId: session.payment_intent as string,
       status: 'PENDING',
-      totalAmount: (session.amount_total! / 100).toFixed(2),
-      shippingName: session.customer_details?.name ?? shipping.name ?? '',
-      shippingEmail: session.customer_details?.email ?? '',
-      shippingPhone: shipping.phone,
-      isPickup: isPickup === 'true',
-      shippingAddress: shipping.address,
-      shippingCity: shipping.city,
-      shippingCountry: shipping.country,
-      shippingZip: shipping.zip,
-      items: {
-        create: await Promise.all(
-          cart.map(async (item) => {
-            const product = await db.product.findUnique({
-              where: { id: item.productId },
-              include: { extras: { where: { id: { in: item.extraIds } } } },
-            })
-            return {
-              productId: item.productId,
-              productName: product!.name,
-              quantity: item.quantity,
-              basePrice: product!.basePrice,
-              totalPrice: (item.unitPrice * item.quantity).toFixed(2),
-              extras: {
-                create: product!.extras.map((extra) => ({
-                  extraId: extra.id,
-                  extraName: extra.name,
-                  price: extra.price,
-                })),
-              },
-            }
-          })
-        ),
+      totalAmount,
+      isPickup: pickupFlag,
+      customer: {
+        name: customerName,
+        email: customerEmail,
+        phone: shipping.phone ?? '',
       },
+      shipping: pickupFlag ? undefined : {
+        address: shipping.address ?? '',
+        city: shipping.city ?? '',
+        zip: shipping.zip ?? '',
+        country: shipping.country ?? '',
+      },
+      items: orderItems,
     },
   })
+
+  // Enviar email de confirmación con factura proforma
+  try {
+    await sendOrderConfirmation({
+      orderId: String(order.id),
+      customerName,
+      customerEmail,
+      customerPhone: shipping.phone,
+      isPickup: pickupFlag,
+      totalAmount,
+      items: orderItems,
+      shipping: pickupFlag ? undefined : {
+        address: shipping.address,
+        city: shipping.city,
+        zip: shipping.zip,
+        country: shipping.country,
+      },
+      createdAt: new Date(),
+    })
+  } catch (err) {
+    // No fallar el webhook si el email falla
+    console.error('Error enviando email de confirmación:', err)
+  }
 }

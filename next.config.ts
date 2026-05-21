@@ -15,6 +15,16 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   output: 'standalone',
+  devIndicators: false,
+  async redirects() {
+    return [
+      {
+        source: '/',
+        destination: '/es',
+        permanent: false,
+      },
+    ]
+  },
   async headers() {
     return [
       {
@@ -28,6 +38,11 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'res.cloudinary.com',
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '3000',
       },
     ],
   },

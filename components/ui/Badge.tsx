@@ -1,4 +1,4 @@
-type Variant = 'gold' | 'dark' | 'success' | 'warning' | 'danger'
+type Variant = 'gold' | 'dark' | 'success' | 'warning' | 'danger' | 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
 
 interface BadgeProps {
   variant?: Variant
@@ -12,6 +12,11 @@ const variantClasses: Record<Variant, string> = {
   success: 'border border-green-700 text-green-400 bg-transparent',
   warning: 'border border-yellow-700 text-yellow-400 bg-transparent',
   danger: 'border border-red-700 text-red-400 bg-transparent',
+  pending: 'border border-yellow-700 text-yellow-400 bg-transparent',
+  processing: 'border border-blue-700 text-blue-400 bg-transparent',
+  shipped: 'border border-purple-700 text-purple-400 bg-transparent',
+  delivered: 'border border-green-700 text-green-400 bg-transparent',
+  cancelled: 'border border-red-700 text-red-400 bg-transparent',
 }
 
 export function Badge({ variant = 'gold', children, className = '' }: BadgeProps) {
