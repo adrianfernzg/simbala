@@ -16,6 +16,9 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   output: 'standalone',
   devIndicators: false,
+  experimental: {
+    trustHostHeader: true,
+  },
   async redirects() {
     return [
       {
