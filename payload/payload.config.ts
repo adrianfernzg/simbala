@@ -13,6 +13,7 @@ import { Clientes } from './collections/Clientes'
 import { Media } from './collections/Media'
 
 export default buildConfig({
+  serverURL: process.env.NEXT_PUBLIC_APP_URL ?? '',
   admin: {
     user: 'users',
     meta: {
