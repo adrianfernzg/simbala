@@ -17,6 +17,7 @@ const nextConfig: NextConfig = {
   output: 'standalone',
   devIndicators: false,
   experimental: {
+    // @ts-expect-error — exists in Next.js runtime but not yet in @types/next
     trustHostHeader: true,
   },
   async redirects() {
