@@ -31,7 +31,7 @@ export default buildConfig({
       connectionString: process.env.DATABASE_URL,
     },
     schemaName: 'payload',
-    push: process.env.NODE_ENV !== 'production',
+    push: process.env.PAYLOAD_DB_PUSH !== 'false',
   }),
   secret: process.env.PAYLOAD_SECRET!,
   typescript: {

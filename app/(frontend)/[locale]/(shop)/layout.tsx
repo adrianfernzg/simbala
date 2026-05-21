@@ -10,7 +10,12 @@ type Props = {
 
 export default async function ShopLayout({ children, params }: Props) {
   const { locale } = await params
-  const session = await auth()
+  let session = null
+  try {
+    session = await auth()
+  } catch (err) {
+    console.error('[ShopLayout] auth() error:', err)
+  }
 
   return (
     <CartProvider>

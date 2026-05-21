@@ -10,16 +10,22 @@ type Props = {
 export default async function HomePage({ params }: Props) {
   const { locale } = await params
 
-  const payload = await getPayload({ config })
+  let featuredProducts: Parameters<typeof ProductCard>[0]['product'][] = []
 
-  const { docs: featuredProducts } = await payload.find({
-    collection: 'products',
-    where: { published: { equals: true } },
-    sort: '-createdAt',
-    limit: 3,
-    depth: 1,
-    locale: locale as 'es' | 'en',
-  })
+  try {
+    const payload = await getPayload({ config })
+    const result = await payload.find({
+      collection: 'products',
+      where: { published: { equals: true } },
+      sort: '-createdAt',
+      limit: 3,
+      depth: 1,
+      locale: locale as 'es' | 'en',
+    })
+    featuredProducts = result.docs as unknown as typeof featuredProducts
+  } catch (err) {
+    console.error('[HomePage] Payload error:', err)
+  }
 
   return (
     <>
@@ -76,7 +82,7 @@ export default async function HomePage({ params }: Props) {
             <ul className="grid grid-cols-1 gap-px bg-border sm:grid-cols-2 lg:grid-cols-3">
               {featuredProducts.map((product) => (
                 <li key={product.id} className="bg-bg">
-                  <ProductCard product={product as Parameters<typeof ProductCard>[0]['product']} locale={locale} />
+                  <ProductCard product={product} locale={locale} />
                 </li>
               ))}
             </ul>
