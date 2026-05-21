@@ -45,9 +45,6 @@ COPY --from=builder --chown=nextjs:nodejs /app/node_modules/prisma ./node_module
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 
-# drizzle-kit requerido por Payload para prodMigrations (pushSchema)
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/drizzle-kit ./node_modules/drizzle-kit
-
 # Payload — colecciones necesarias para el esquema en producción
 COPY --from=builder /app/payload ./payload
 
