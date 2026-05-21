@@ -11,6 +11,7 @@ import { BlogCategories } from './collections/BlogCategories'
 import { Users } from './collections/Users'
 import { Clientes } from './collections/Clientes'
 import { Media } from './collections/Media'
+import * as initialSchema from './migrations/20260521_initial_schema'
 
 export default buildConfig({
   serverURL: process.env.NEXT_PUBLIC_APP_URL ?? '',
@@ -31,8 +32,10 @@ export default buildConfig({
       connectionString: process.env.DATABASE_URL,
     },
     schemaName: 'payload',
-    // En producción sin migraciones previas: PAYLOAD_DB_PUSH=true en Railway (solo primer deploy)
-    push: process.env.PAYLOAD_DB_PUSH === 'true',
+    push: process.env.NODE_ENV !== 'production',
+    prodMigrations: [
+      { name: '20260521_initial_schema', up: initialSchema.up, down: initialSchema.down },
+    ],
   }),
   secret: process.env.PAYLOAD_SECRET!,
   typescript: {
