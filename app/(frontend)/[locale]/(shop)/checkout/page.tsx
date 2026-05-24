@@ -55,7 +55,11 @@ export default function CheckoutPage({ params }: Props) {
       }
 
       const result = await createCheckoutSession(payload, locale)
+      // Clear cart both in state and directly in localStorage to avoid
+      // a race condition where window.location.href navigates before
+      // React's useEffect can persist the empty state.
       clearCart()
+      try { localStorage.removeItem('simbala_cart') } catch { /* ignore SSR */ }
       window.location.href = result.url
     } catch (err) {
       setLoading(false)
