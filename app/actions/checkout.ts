@@ -5,7 +5,6 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import { stripe } from '@/lib/stripe'
 import { checkoutSchema } from '@/lib/validations/checkout'
-import { redirect } from 'next/navigation'
 
 type ResolvedExtra = {
   extraId: string
@@ -15,18 +14,33 @@ type ResolvedExtra = {
 }
 
 export async function createCheckoutSession(data: unknown, locale: string = 'es') {
-  const session = await auth()
+  let session
+  try {
+    session = await auth()
+  } catch (err) {
+    console.error('[checkout] auth() error:', err)
+    throw new Error('Error de autenticación. Recarga la página e inténtalo de nuevo.')
+  }
+
   if (!session?.user?.id) {
-    redirect('/login')
+    throw new Error(`UNAUTHENTICATED:/${locale}/login`)
   }
 
   const parsed = checkoutSchema.safeParse(data)
   if (!parsed.success) {
+    console.error('[checkout] Zod validation error:', parsed.error.flatten())
     throw new Error('Datos de checkout inválidos')
   }
 
   const { items, isPickup, shippingAddress } = parsed.data
-  const payload = await getPayload({ config })
+
+  let payload
+  try {
+    payload = await getPayload({ config })
+  } catch (err) {
+    console.error('[checkout] getPayload() error:', err)
+    throw new Error('Error interno del servidor. Inténtalo de nuevo.')
+  }
 
   // Verificar y calcular precios en el servidor — nunca confiar en precios del cliente
   const cartItems = await Promise.all(
@@ -104,6 +118,7 @@ export async function createCheckoutSession(data: unknown, locale: string = 'es'
   )
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+  console.log('[checkout] Creating Stripe session for user:', session.user.id, 'appUrl:', appUrl)
 
   const checkoutSession = await stripe.checkout.sessions.create({
     mode: 'payment',

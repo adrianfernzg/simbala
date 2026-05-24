@@ -59,7 +59,13 @@ export default function CheckoutPage({ params }: Props) {
       window.location.href = result.url
     } catch (err) {
       setLoading(false)
-      setError(err instanceof Error ? err.message : 'Error al procesar el pago')
+      const message = err instanceof Error ? err.message : 'Error al procesar el pago'
+      if (message.startsWith('UNAUTHENTICATED:')) {
+        const redirectTo = message.replace('UNAUTHENTICATED:', '')
+        router.push(redirectTo)
+        return
+      }
+      setError(message)
     }
   }
 
