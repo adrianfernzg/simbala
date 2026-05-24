@@ -14,7 +14,7 @@ type ResolvedExtra = {
   value?: string
 }
 
-export async function createCheckoutSession(data: unknown) {
+export async function createCheckoutSession(data: unknown, locale: string = 'es') {
   const session = await auth()
   if (!session?.user?.id) {
     redirect('/login')
@@ -135,8 +135,8 @@ export async function createCheckoutSession(data: unknown) {
       isPickup: String(isPickup),
       shippingAddress: JSON.stringify(shippingAddress ?? {}),
     },
-    success_url: `${appUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${appUrl}/cart`,
+    success_url: `${appUrl}/${locale}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${appUrl}/${locale}/cart`,
   })
 
   if (!checkoutSession.url) throw new Error('No se pudo crear la sesión de pago')

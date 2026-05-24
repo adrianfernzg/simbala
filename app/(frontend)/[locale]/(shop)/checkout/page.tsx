@@ -54,7 +54,7 @@ export default function CheckoutPage({ params }: Props) {
         shippingAddress: isPickup ? undefined : form,
       }
 
-      const result = await createCheckoutSession(payload)
+      const result = await createCheckoutSession(payload, locale)
       clearCart()
       window.location.href = result.url
     } catch (err) {

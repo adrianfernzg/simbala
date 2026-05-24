@@ -1,9 +1,10 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { auth, signOut } from '@/lib/auth'
+import { auth } from '@/lib/auth'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { Badge } from '@/components/ui/Badge'
+import { LogoutButton } from '@/components/shop/LogoutButton'
 
 type Props = {
   params: Promise<{ locale: string }>
@@ -33,7 +34,8 @@ const statusVariant: Record<string, 'gold' | 'dark' | 'pending' | 'processing' |
 
 export default async function AccountPage({ params }: Props) {
   const { locale } = await params
-  const session = await auth()
+  let session = null
+  try { session = await auth() } catch { /* ignorar */ }
   if (!session?.user?.id) redirect(`/${locale}/login`)
 
   const payload = await getPayload({ config })
@@ -181,17 +183,7 @@ export default async function AccountPage({ params }: Props) {
 
       {/* Cerrar sesión */}
       <div className="mt-16 border-t border-border pt-8">
-        <form action={async () => {
-          'use server'
-          await signOut({ redirectTo: `/${locale}` })
-        }}>
-          <button
-            type="submit"
-            className="text-xs uppercase tracking-widest text-text-muted hover:text-red-400 transition-colors"
-          >
-            Cerrar sesión
-          </button>
-        </form>
+        <LogoutButton locale={locale} />
       </div>
     </section>
   )
