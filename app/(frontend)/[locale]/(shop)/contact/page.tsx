@@ -1,4 +1,7 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
+import { auth } from '@/lib/auth'
+import { ContactForm } from '@/components/shop/ContactForm'
 
 type Props = {
   params: Promise<{ locale: string }>
@@ -16,6 +19,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ContactPage({ params }: Props) {
   const { locale } = await params
+  const isEs = locale === 'es'
+
+  let session = null
+  try { session = await auth() } catch { /* ignorar */ }
+  const user = session?.user ?? null
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
@@ -66,69 +74,29 @@ export default async function ContactPage({ params }: Props) {
         </div>
 
         {/* Formulario */}
-        <div className="border border-border p-8">
-          <h2 className="text-lg font-semibold text-text-primary">
-            {locale === 'es' ? 'Envíanos un mensaje' : 'Send us a message'}
-          </h2>
-          <p className="mt-1 text-xs text-text-muted">
-            {locale === 'es'
-              ? 'Cuéntanos qué modelo te interesa y te respondemos con un presupuesto.'
-              : 'Tell us which model you\'re interested in and we\'ll send you a quote.'}
-          </p>
-
-          <form
-            action={`mailto:hola@simbalarcade.com`}
-            method="get"
-            className="mt-8 space-y-5"
-          >
-            <div>
-              <label className="block text-[10px] uppercase tracking-widest text-text-muted mb-2">
-                {locale === 'es' ? 'Nombre' : 'Name'}
-              </label>
-              <input
-                type="text"
-                name="nombre"
-                required
-                className="w-full border border-border bg-surface px-4 py-3 text-sm text-text-primary placeholder:text-text-muted focus:border-gold focus:outline-none transition-colors"
-                placeholder={locale === 'es' ? 'Tu nombre' : 'Your name'}
-              />
-            </div>
-            <div>
-              <label className="block text-[10px] uppercase tracking-widest text-text-muted mb-2">
-                Email
-              </label>
-              <input
-                type="email"
-                name="email"
-                required
-                className="w-full border border-border bg-surface px-4 py-3 text-sm text-text-primary placeholder:text-text-muted focus:border-gold focus:outline-none transition-colors"
-                placeholder={locale === 'es' ? 'tu@email.com' : 'your@email.com'}
-              />
-            </div>
-            <div>
-              <label className="block text-[10px] uppercase tracking-widest text-text-muted mb-2">
-                {locale === 'es' ? 'Mensaje' : 'Message'}
-              </label>
-              <textarea
-                name="body"
-                rows={5}
-                required
-                className="w-full border border-border bg-surface px-4 py-3 text-sm text-text-primary placeholder:text-text-muted focus:border-gold focus:outline-none transition-colors resize-none"
-                placeholder={
-                  locale === 'es'
-                    ? 'Cuéntanos qué modelo te interesa, si quieres extras, y si prefieres envío o recogida en taller...'
-                    : 'Tell us which model you\'re interested in...'
-                }
-              />
-            </div>
-            <button
-              type="submit"
-              className="w-full border border-gold bg-gold py-3.5 text-xs font-semibold uppercase tracking-widest text-black hover:bg-gold-light transition-colors"
+        {user ? (
+          <ContactForm locale={locale} userEmail={user.email!} userName={user.name ?? ''} />
+        ) : (
+          <div className="border border-border p-8 flex flex-col items-center justify-center text-center gap-5 min-h-[300px]">
+            <p className="text-[10px] uppercase tracking-[0.3em] text-text-muted">
+              {isEs ? 'Acceso requerido' : 'Login required'}
+            </p>
+            <p className="text-sm text-text-secondary max-w-xs">
+              {isEs
+                ? 'Inicia sesión para enviarnos un mensaje. También puedes escribirnos directamente a'
+                : 'Sign in to send us a message. You can also reach us directly at'}{' '}
+              <a href="mailto:hola@simbalarcade.com" className="text-gold hover:underline">
+                hola@simbalarcade.com
+              </a>
+            </p>
+            <Link
+              href={`/${locale}/login?callbackUrl=/${locale}/contact`}
+              className="border border-gold px-8 py-3 text-xs font-semibold uppercase tracking-widest text-gold hover:bg-gold hover:text-black transition-all"
             >
-              {locale === 'es' ? 'Enviar mensaje' : 'Send message'}
-            </button>
-          </form>
-        </div>
+              {isEs ? 'Iniciar sesión' : 'Sign in'}
+            </Link>
+          </div>
+        )}
       </div>
     </section>
   )

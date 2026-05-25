@@ -143,6 +143,39 @@ function buildInvoiceHtml(order: OrderEmailData): string {
 </html>`
 }
 
+export async function sendContactEmail(data: {
+  name: string
+  email: string
+  message: string
+}): Promise<void> {
+  const notificationAddress = process.env.CONTACT_EMAIL ?? 'simbala.desarrollo@gmail.com'
+  const html = `
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
+      <h2 style="color:#C9A84C;">Nuevo mensaje de contacto — Simbala Arcade</h2>
+      <p><strong>Nombre:</strong> ${data.name}</p>
+      <p><strong>Email:</strong> ${data.email}</p>
+      <hr style="border:1px solid #eee;margin:16px 0;" />
+      <p style="white-space:pre-wrap;">${data.message}</p>
+    </div>
+  `
+
+  if (!resend) {
+    console.log(`\n📧 [CONTACTO sin Resend] De: ${data.name} <${data.email}>\n${data.message}\n`)
+    return
+  }
+
+  // replyTo = email del cliente → el propietario responde directamente al cliente
+  // El cliente nunca ve la dirección real del propietario porque el From siempre
+  // sale de EMAIL_FROM (hola@simbalarcade.com o similar).
+  await resend.emails.send({
+    from: process.env.EMAIL_FROM ?? 'Simbala Arcade <hola@simbalarcade.com>',
+    to: notificationAddress,
+    replyTo: data.email,
+    subject: `Mensaje de ${data.name} — Simbala Arcade`,
+    html,
+  })
+}
+
 export async function sendOrderConfirmation(order: OrderEmailData): Promise<void> {
   const ref = order.orderId.slice(-8).toUpperCase()
   const subject = `Pedido confirmado #${ref} — Simbala Arcade`

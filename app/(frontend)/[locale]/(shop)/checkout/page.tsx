@@ -55,21 +55,23 @@ export default function CheckoutPage({ params }: Props) {
       }
 
       const result = await createCheckoutSession(payload, locale)
-      // Clear cart both in state and directly in localStorage to avoid
-      // a race condition where window.location.href navigates before
-      // React's useEffect can persist the empty state.
+
+      if ('error' in result) {
+        setLoading(false)
+        if (result.redirectTo) {
+          router.push(result.redirectTo)
+          return
+        }
+        setError(result.error)
+        return
+      }
+
       clearCart()
       try { localStorage.removeItem('simbala_cart') } catch { /* ignore SSR */ }
       window.location.href = result.url
     } catch (err) {
       setLoading(false)
-      const message = err instanceof Error ? err.message : 'Error al procesar el pago'
-      if (message.startsWith('UNAUTHENTICATED:')) {
-        const redirectTo = message.replace('UNAUTHENTICATED:', '')
-        router.push(redirectTo)
-        return
-      }
-      setError(message)
+      setError(err instanceof Error ? err.message : 'Error al procesar el pago')
     }
   }
 

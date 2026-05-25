@@ -28,7 +28,9 @@ export default function middleware(req: NextRequest) {
       // is always undefined in App Router (it was a Pages Router concept).
       const localeMatch = pathname.match(/^\/(es|en)\//)
       const locale = localeMatch?.[1] ?? 'es'
-      const loginUrl = new URL(`/${locale}/login`, req.url)
+      // Use req.nextUrl (not req.url) so Railway's reverse proxy returns
+      // simbala.es instead of the internal service hostname.
+      const loginUrl = new URL(`/${locale}/login`, req.nextUrl)
       loginUrl.searchParams.set('callbackUrl', pathname)
       return NextResponse.redirect(loginUrl)
     }
