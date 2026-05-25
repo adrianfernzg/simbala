@@ -75,6 +75,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             collection: 'clientes',
             where: { email: { equals: user.email } },
             limit: 1,
+            overrideAccess: true,
           })
           if (existing.totalDocs === 0) {
             await payload.create({

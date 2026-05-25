@@ -8,7 +8,7 @@ import config from '@payload-config'
 // Solo accesible para admins. Llamar una vez tras el despliegue.
 export async function POST(req: Request) {
   const session = await auth()
-  if (session?.user?.role !== 'admin') {
+  if (session?.user?.role !== 'ADMIN') {
     return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
   }
 
