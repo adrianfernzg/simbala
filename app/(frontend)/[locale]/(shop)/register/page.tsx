@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
-import { signIn } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import { Input } from '@/components/ui/Input'
 
@@ -47,10 +46,7 @@ export default function RegisterPage() {
       return
     }
 
-    // Auto-login after register
-    await signIn('credentials', { email, password, redirect: false })
-    router.push(`/${locale}`)
-    router.refresh()
+    router.push(`/${locale}/verify-email?email=${encodeURIComponent(email)}`)
   }
 
   return (

@@ -15,10 +15,12 @@ model User {
   email         String    @unique
   emailVerified DateTime?
   image         String?
-  password      String?
-  role          Role      @default(USER)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  password                String?
+  role                    Role      @default(USER)
+  verificationToken       String?
+  verificationTokenExpiry DateTime?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
 
   accounts Account[]
   sessions Session[]

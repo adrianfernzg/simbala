@@ -13,6 +13,7 @@ export default function LoginPage() {
   const searchParams = useSearchParams()
   const { locale } = useParams<{ locale: string }>()
   const callbackUrl = searchParams.get('callbackUrl') ?? `/${locale}`
+  const justVerified = searchParams.get('verified') === '1'
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -33,7 +34,7 @@ export default function LoginPage() {
     setLoading(false)
 
     if (result?.error) {
-      setError('Email o contraseña incorrectos')
+      setError('Email o contraseña incorrectos. Si acabas de registrarte, verifica tu cuenta primero.')
       return
     }
 
@@ -49,6 +50,12 @@ export default function LoginPage() {
           <p className="text-[10px] uppercase tracking-[0.4em] text-gold">Bienvenido</p>
           <h1 className="mt-3 text-2xl font-bold text-text-primary">{t('login')}</h1>
         </div>
+
+        {justVerified && (
+          <div className="mb-6 border border-gold/30 bg-gold/5 px-4 py-3 text-xs text-gold">
+            Cuenta verificada correctamente. Ya puedes iniciar sesión.
+          </div>
+        )}
 
         {error && (
           <div className="mb-6 border border-red-800/50 bg-red-950/30 px-4 py-3 text-xs text-red-400">

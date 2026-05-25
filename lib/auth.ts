@@ -37,13 +37,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         const user = await db.user.findUnique({
           where: { email: parsed.data.email },
-          select: { id: true, email: true, name: true, password: true, role: true },
+          select: { id: true, email: true, name: true, password: true, role: true, emailVerified: true },
         })
 
         if (!user || !user.password) return null
 
         const passwordMatch = await bcrypt.compare(parsed.data.password, user.password)
         if (!passwordMatch) return null
+
+        if (!user.emailVerified) return null
 
         return { id: user.id, email: user.email, name: user.name, role: user.role }
       },
