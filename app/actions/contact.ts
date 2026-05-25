@@ -33,6 +33,6 @@ export async function submitContact(data: unknown): Promise<ContactResult> {
     return { ok: true }
   } catch (err) {
     console.error('[contact] sendContactEmail error:', err)
-    return { error: 'No se pudo enviar el mensaje. Inténtalo de nuevo.' }
+    return { error: 'No se pudo enviar el mensaje. Inténtalo de nuevo más tarde.' }
   }
 }

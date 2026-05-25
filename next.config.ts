@@ -51,11 +51,9 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'res.cloudinary.com',
       },
-      {
-        protocol: 'http',
-        hostname: 'localhost',
-        port: '3000',
-      },
+      ...(process.env.NODE_ENV !== 'production'
+        ? [{ protocol: 'http' as const, hostname: 'localhost', port: '3000' }]
+        : []),
     ],
   },
 }
