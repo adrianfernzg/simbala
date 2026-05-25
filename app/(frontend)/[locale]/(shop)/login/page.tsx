@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { signIn } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import { Input } from '@/components/ui/Input'
+import { checkLoginStatus } from '@/app/actions/check-login-status'
 
 export default function LoginPage() {
   const t = useTranslations('auth')
@@ -17,12 +18,12 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
+  const [error, setError] = useState<{ text: string; action?: { label: string; href: string } } | null>(null)
   const [loading, setLoading] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    setError('')
+    setError(null)
     setLoading(true)
 
     const result = await signIn('credentials', {
@@ -31,21 +32,30 @@ export default function LoginPage() {
       redirect: false,
     })
 
-    setLoading(false)
-
-    if (result?.error) {
-      setError('Email o contraseña incorrectos. Si acabas de registrarte, verifica tu cuenta primero.')
+    if (!result?.error) {
+      router.push(callbackUrl)
+      router.refresh()
       return
     }
 
-    router.push(callbackUrl)
-    router.refresh()
+    const status = await checkLoginStatus(email)
+    setLoading(false)
+
+    if (status === 'not_found') {
+      setError({ text: 'No existe ninguna cuenta con ese email.' })
+    } else if (status === 'not_verified') {
+      setError({
+        text: 'Cuenta pendiente de verificación. Revisa tu bandeja de entrada.',
+        action: { label: 'Reenviar código', href: `/${locale}/verify-email?email=${encodeURIComponent(email)}` },
+      })
+    } else {
+      setError({ text: 'Contraseña incorrecta.' })
+    }
   }
 
   return (
     <section className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-md flex-col items-center justify-center px-4 py-16">
       <div className="w-full border border-border bg-surface p-10">
-        {/* Header */}
         <div className="mb-8 text-center">
           <p className="text-[10px] uppercase tracking-[0.4em] text-gold">Bienvenido</p>
           <h1 className="mt-3 text-2xl font-bold text-text-primary">{t('login')}</h1>
@@ -59,7 +69,15 @@ export default function LoginPage() {
 
         {error && (
           <div className="mb-6 border border-red-800/50 bg-red-950/30 px-4 py-3 text-xs text-red-400">
-            {error}
+            {error.text}
+            {error.action && (
+              <Link
+                href={error.action.href}
+                className="ml-2 underline hover:text-red-300 transition-colors"
+              >
+                {error.action.label}
+              </Link>
+            )}
           </div>
         )}
 
