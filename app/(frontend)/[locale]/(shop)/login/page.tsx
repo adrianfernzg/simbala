@@ -48,6 +48,8 @@ export default function LoginPage() {
         text: 'Cuenta pendiente de verificación. Revisa tu bandeja de entrada.',
         action: { label: 'Reenviar código', href: `/${locale}/verify-email?email=${encodeURIComponent(email)}` },
       })
+    } else if (status === 'google_only') {
+      setError({ text: 'Esta cuenta se creó con Google. Usa el botón de Google para acceder.' })
     } else {
       setError({ text: 'Contraseña incorrecta.', showForgot: true })
     }

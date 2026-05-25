@@ -24,10 +24,14 @@ export async function requestPasswordReset(data: unknown): Promise<Result> {
 
   const user = await db.user.findUnique({
     where: { email: parsed.data.email },
-    select: { id: true, name: true, email: true, emailVerified: true },
+    select: { id: true, name: true, email: true, emailVerified: true, password: true, accounts: { select: { provider: true } } },
   })
 
   if (!user) return { error: 'No existe ninguna cuenta con ese email.' }
+
+  const hasGoogle = user.accounts.some((a) => a.provider === 'google')
+  if (!user.password && hasGoogle) return { error: 'Esta cuenta usa Google. Inicia sesión con el botón de Google, no necesitas contraseña.' }
+
   if (!user.emailVerified) return { error: 'Esta cuenta aún no está verificada. Verifica tu email antes de cambiar la contraseña.' }
 
   const token = crypto.randomBytes(32).toString('hex')
