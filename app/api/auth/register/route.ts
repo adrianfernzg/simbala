@@ -13,9 +13,13 @@ function generateVerificationCode(): string {
 
 export async function POST(req: Request) {
   const ip = req.headers.get('x-forwarded-for') ?? 'anonymous'
-  const { success } = await ratelimit.limit(`register:${ip}`)
-  if (!success) {
-    return NextResponse.json({ error: 'Demasiadas peticiones' }, { status: 429 })
+  try {
+    const { success } = await ratelimit.limit(`register:${ip}`)
+    if (!success) {
+      return NextResponse.json({ error: 'Demasiadas peticiones' }, { status: 429 })
+    }
+  } catch {
+    // Si Upstash falla, continuar sin rate limiting
   }
 
   const body = await req.json()
@@ -33,7 +37,6 @@ export async function POST(req: Request) {
   })
 
   if (existingUser) {
-    // Si ya existe pero no está verificado, reenviar código
     if (!existingUser.emailVerified) {
       const code = generateVerificationCode()
       const expiry = new Date(Date.now() + 24 * 60 * 60 * 1000)
@@ -41,7 +44,12 @@ export async function POST(req: Request) {
         where: { id: existingUser.id },
         data: { verificationToken: code, verificationTokenExpiry: expiry },
       })
-      await sendVerificationEmail({ email: existingUser.email, name: existingUser.name ?? existingUser.email, code })
+      try {
+        await sendVerificationEmail({ email: existingUser.email, name: existingUser.name ?? existingUser.email, code })
+      } catch (err) {
+        console.error('[register] sendVerificationEmail error (resend):', err)
+        return NextResponse.json({ error: 'No se pudo enviar el email de verificación. Inténtalo de nuevo.' }, { status: 500 })
+      }
       return NextResponse.json({ ok: true }, { status: 200 })
     }
     return NextResponse.json({ error: 'El email ya está registrado' }, { status: 409 })
@@ -62,9 +70,14 @@ export async function POST(req: Request) {
     select: { id: true, email: true, name: true },
   })
 
-  await sendVerificationEmail({ email: user.email, name: user.name ?? user.email, code })
+  try {
+    await sendVerificationEmail({ email: user.email, name: user.name ?? user.email, code })
+  } catch (err) {
+    console.error('[register] sendVerificationEmail error:', err)
+    await db.user.delete({ where: { id: user.id } })
+    return NextResponse.json({ error: 'No se pudo enviar el email de verificación. Inténtalo de nuevo.' }, { status: 500 })
+  }
 
-  // Crear registro en Payload para que el admin lo vea en el panel
   try {
     const payload = await getPayload({ config })
     await payload.create({

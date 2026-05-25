@@ -15,7 +15,7 @@ function getRatelimit(): Ratelimit {
 
   _ratelimit = new Ratelimit({
     redis: Redis.fromEnv(),
-    limiter: Ratelimit.slidingWindow(10, '10 s'),
+    limiter: Ratelimit.fixedWindow(10, '10 s'),
     analytics: true,
   })
   return _ratelimit
