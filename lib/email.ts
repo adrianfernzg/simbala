@@ -12,6 +12,7 @@ type OrderItem = {
 
 type OrderEmailData = {
   orderId: string
+  orderRef?: string
   customerName: string
   customerEmail: string
   customerPhone?: string
@@ -31,7 +32,7 @@ const fmt = (n: number) =>
   new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(n)
 
 function buildInvoiceHtml(order: OrderEmailData): string {
-  const ref = order.orderId.slice(-8).toUpperCase()
+  const ref = order.orderRef ?? order.orderId.slice(-8).toUpperCase()
   const date = new Intl.DateTimeFormat('es-ES', {
     day: '2-digit', month: 'long', year: 'numeric',
   }).format(order.createdAt ?? new Date())

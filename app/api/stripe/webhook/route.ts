@@ -5,6 +5,11 @@ import config from '@payload-config'
 import { sendOrderConfirmation } from '@/lib/email'
 import type Stripe from 'stripe'
 
+const CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+function generateOrderRef(): string {
+  return 'SA-' + Array.from({ length: 6 }, () => CHARS[Math.floor(Math.random() * CHARS.length)]).join('')
+}
+
 type ExtraSnapshot = {
   extraId: string
   extraName: string
@@ -114,12 +119,14 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     })),
   }))
 
-  console.log('[webhook] Creating order for user', userId, 'total', totalAmount)
+  const orderRef = generateOrderRef()
+  console.log('[webhook] Creating order for user', userId, 'ref', orderRef, 'total', totalAmount)
 
   const order = await payload.create({
     collection: 'orders',
     overrideAccess: true,
     data: {
+      orderRef,
       userId,
       stripePaymentId: paymentIntentId,
       status: 'PENDING',
@@ -140,11 +147,12 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     },
   })
 
-  console.log('[webhook] Order created:', order.id)
+  console.log('[webhook] Order created:', order.id, 'ref:', orderRef)
 
   try {
     await sendOrderConfirmation({
       orderId: String(order.id),
+      orderRef,
       customerName,
       customerEmail,
       customerPhone: shipping.phone,

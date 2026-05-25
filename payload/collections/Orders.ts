@@ -3,8 +3,8 @@ import type { CollectionConfig } from 'payload'
 export const Orders: CollectionConfig = {
   slug: 'orders',
   admin: {
-    useAsTitle: 'id',
-    defaultColumns: ['id', 'status', 'customer__name', 'totalAmount', 'isPickup', 'createdAt'],
+    useAsTitle: 'orderRef',
+    defaultColumns: ['orderRef', 'status', 'customer__name', 'totalAmount', 'isPickup', 'createdAt'],
     description: 'Pedidos recibidos vía Stripe. Cambia el estado desde la barra lateral. Puedes añadir notas internas.',
   },
   access: {
@@ -19,6 +19,13 @@ export const Orders: CollectionConfig = {
   },
   fields: [
     // ─── Sidebar ──────────────────────────────────────────────
+    {
+      name: 'orderRef',
+      label: 'Referencia',
+      type: 'text',
+      unique: true,
+      admin: { position: 'sidebar', readOnly: true, description: 'Referencia visible para el cliente (SA-XXXXXX)' },
+    },
     {
       name: 'status',
       type: 'select',

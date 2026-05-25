@@ -93,7 +93,7 @@ export default async function AccountPage({ params }: Props) {
                       <div>
                         <div className="flex items-center gap-3">
                           <p className="text-xs font-medium text-text-primary">
-                            Pedido #{String(order.id).slice(-8).toUpperCase()}
+                            {(order.orderRef as string | null | undefined) ?? `#${String(order.id)}`}
                           </p>
                           <Badge variant={statusVariant[order.status as string] ?? 'dark'}>
                             {statusLabel[order.status as string] ?? order.status}

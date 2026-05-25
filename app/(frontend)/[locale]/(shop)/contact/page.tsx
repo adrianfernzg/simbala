@@ -51,13 +51,6 @@ export default async function ContactPage({ params }: Props) {
                 : 'Visits by appointment only',
             },
             {
-              label: 'Email',
-              value: 'hola@simbalarcade.com',
-              detail: locale === 'es'
-                ? 'Respondemos en menos de 24h'
-                : 'We reply within 24h',
-            },
-            {
               label: locale === 'es' ? 'Plazo de fabricación' : 'Lead time',
               value: locale === 'es' ? '8–12 semanas' : '8–12 weeks',
               detail: locale === 'es'
@@ -83,11 +76,8 @@ export default async function ContactPage({ params }: Props) {
             </p>
             <p className="text-sm text-text-secondary max-w-xs">
               {isEs
-                ? 'Inicia sesión para enviarnos un mensaje. También puedes escribirnos directamente a'
-                : 'Sign in to send us a message. You can also reach us directly at'}{' '}
-              <a href="mailto:hola@simbalarcade.com" className="text-gold hover:underline">
-                hola@simbalarcade.com
-              </a>
+                ? 'Inicia sesión para enviarnos un mensaje.'
+                : 'Sign in to send us a message.'}
             </p>
             <Link
               href={`/${locale}/login?callbackUrl=/${locale}/contact`}
