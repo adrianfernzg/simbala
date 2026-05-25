@@ -63,10 +63,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async signIn({ user, account }) {
       if (account?.provider === 'google' && user.id && user.email) {
         // Asegurar que emailVerified esté seteado (el adapter no lo actualiza al vincular)
-        await db.user.update({
-          where: { id: user.id },
+        await db.user.updateMany({
+          where: { email: user.email, emailVerified: null },
           data: { emailVerified: new Date() },
-        }).catch(() => {})
+        })
 
         // Sincronizar con Payload Clientes
         try {

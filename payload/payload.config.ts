@@ -1,4 +1,5 @@
 import { buildConfig } from 'payload'
+import sharp from 'sharp'
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { es } from '@payloadcms/translations/languages/es'
@@ -39,6 +40,7 @@ export default buildConfig({
       { ...addOrderRef, name: '20260525_add_order_ref' },
     ],
   }),
+  sharp,
   secret: process.env.PAYLOAD_SECRET!,
   typescript: {
     outputFile: 'payload-types.ts',
