@@ -67,7 +67,11 @@ export async function resendVerificationCode(data: unknown): Promise<Result> {
     data: { verificationToken: code, verificationTokenExpiry: expiry },
   })
 
-  await sendVerificationEmail({ email: user.email, name: user.name ?? user.email, code })
+  try {
+    await sendVerificationEmail({ email: user.email, name: user.name ?? user.email, code })
+  } catch {
+    return { error: 'No se pudo enviar el email. Inténtalo de nuevo.' }
+  }
 
   return { ok: true }
 }

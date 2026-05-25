@@ -6,6 +6,11 @@ import bcrypt from 'bcryptjs'
 import crypto from 'crypto'
 import { z } from 'zod'
 
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false
+  return crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b))
+}
+
 type Result = { ok: true } | { error: string }
 
 const requestSchema = z.object({
@@ -63,10 +68,14 @@ export async function confirmPasswordReset(data: unknown): Promise<Result> {
 
   const user = await db.user.findFirst({
     where: { resetPasswordToken: parsed.data.token },
-    select: { id: true, resetPasswordTokenExpiry: true },
+    select: { id: true, resetPasswordToken: true, resetPasswordTokenExpiry: true },
   })
 
-  if (!user) return { error: 'El enlace no es válido o ya fue utilizado.' }
+  if (!user || !user.resetPasswordToken) return { error: 'El enlace no es válido o ya fue utilizado.' }
+
+  if (!timingSafeEqual(user.resetPasswordToken, parsed.data.token)) {
+    return { error: 'El enlace no es válido o ya fue utilizado.' }
+  }
 
   if (!user.resetPasswordTokenExpiry || user.resetPasswordTokenExpiry < new Date()) {
     return { error: 'El enlace ha expirado. Solicita uno nuevo desde la página de inicio de sesión.' }
