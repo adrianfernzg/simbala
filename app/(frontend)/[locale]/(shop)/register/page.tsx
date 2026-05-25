@@ -46,6 +46,8 @@ export default function RegisterPage() {
       return
     }
 
+    sessionStorage.setItem('pendingLoginEmail', email)
+    sessionStorage.setItem('pendingLoginPassword', password)
     router.push(`/${locale}/verify-email?email=${encodeURIComponent(email)}`)
   }
 

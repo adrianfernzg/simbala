@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useRouter, useSearchParams, useParams } from 'next/navigation'
+import { signIn } from 'next-auth/react'
 import { verifyEmailCode, resendVerificationCode } from '@/app/actions/verify-email'
 
 export default function VerifyEmailPage() {
@@ -56,6 +57,24 @@ export default function VerifyEmailPage() {
     setLoading(false)
 
     if ('error' in result) { setError(result.error); return }
+
+    const savedEmail = sessionStorage.getItem('pendingLoginEmail')
+    const savedPassword = sessionStorage.getItem('pendingLoginPassword')
+
+    if (savedEmail && savedPassword) {
+      sessionStorage.removeItem('pendingLoginEmail')
+      sessionStorage.removeItem('pendingLoginPassword')
+      const loginResult = await signIn('credentials', {
+        email: savedEmail,
+        password: savedPassword,
+        redirect: false,
+      })
+      if (!loginResult?.error) {
+        router.push(`/${locale}`)
+        router.refresh()
+        return
+      }
+    }
 
     router.push(`/${locale}/login?verified=1`)
   }

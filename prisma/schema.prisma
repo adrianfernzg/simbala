@@ -19,6 +19,8 @@ model User {
   role                    Role      @default(USER)
   verificationToken       String?
   verificationTokenExpiry DateTime?
+  resetPasswordToken      String?
+  resetPasswordTokenExpiry DateTime?
   createdAt               DateTime  @default(now())
   updatedAt               DateTime  @updatedAt
 

@@ -18,7 +18,7 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState<{ text: string; action?: { label: string; href: string } } | null>(null)
+  const [error, setError] = useState<{ text: string; action?: { label: string; href: string }; showForgot?: boolean } | null>(null)
   const [loading, setLoading] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
@@ -49,7 +49,7 @@ export default function LoginPage() {
         action: { label: 'Reenviar código', href: `/${locale}/verify-email?email=${encodeURIComponent(email)}` },
       })
     } else {
-      setError({ text: 'Contraseña incorrecta.' })
+      setError({ text: 'Contraseña incorrecta.', showForgot: true })
     }
   }
 
@@ -69,13 +69,21 @@ export default function LoginPage() {
 
         {error && (
           <div className="mb-6 border border-red-800/50 bg-red-950/30 px-4 py-3 text-xs text-red-400">
-            {error.text}
+            <span>{error.text}</span>
             {error.action && (
               <Link
                 href={error.action.href}
                 className="ml-2 underline hover:text-red-300 transition-colors"
               >
                 {error.action.label}
+              </Link>
+            )}
+            {error.showForgot && (
+              <Link
+                href={`/${locale}/reset-password?email=${encodeURIComponent(email)}`}
+                className="ml-2 underline hover:text-red-300 transition-colors"
+              >
+                ¿Olvidaste tu contraseña?
               </Link>
             )}
           </div>
