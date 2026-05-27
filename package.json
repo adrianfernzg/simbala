@@ -18,6 +18,7 @@
     "@payloadcms/next": "^3.0.0",
     "@payloadcms/richtext-lexical": "^3.0.0",
     "@prisma/client": "^5.22.0",
+    "@tailwindcss/oxide": "^4.3.0",
     "@upstash/ratelimit": "^2.0.5",
     "@upstash/redis": "^1.34.8",
     "bcryptjs": "^2.4.3",
@@ -52,6 +53,7 @@
   "optionalDependencies": {
     "@img/sharp-libvips-linuxmusl-x64": "1.2.4",
     "@img/sharp-linuxmusl-x64": "0.34.5",
+    "@tailwindcss/oxide-linux-x64-musl": "4.3.0",
     "lightningcss-linux-x64-musl": "1.32.0"
   }
 }
