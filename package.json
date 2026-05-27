@@ -23,6 +23,7 @@
     "bcryptjs": "^2.4.3",
     "cloudinary": "^2.6.1",
     "graphql": "^16.14.0",
+    "lightningcss": "^1.32.0",
     "next": "15.4.11",
     "next-auth": "5.0.0-beta.28",
     "next-intl": "^3.26.3",
@@ -49,7 +50,8 @@
     "typescript": "^5"
   },
   "optionalDependencies": {
+    "@img/sharp-libvips-linuxmusl-x64": "1.2.4",
     "@img/sharp-linuxmusl-x64": "0.34.5",
-    "@img/sharp-libvips-linuxmusl-x64": "1.2.4"
+    "lightningcss-linux-x64-musl": "1.32.0"
   }
 }
