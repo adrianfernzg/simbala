@@ -98,9 +98,9 @@ export default async function ProductsPage({ params, searchParams }: Props) {
 
       {products.length > 0 ? (
         <>
-          <ul className="mt-10 grid grid-cols-1 gap-px bg-border sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <ul className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {products.map((product) => (
-              <li key={product.id} className="bg-bg">
+              <li key={product.id}>
                 <ProductCard product={product as Parameters<typeof ProductCard>[0]['product']} locale={locale} />
               </li>
             ))}

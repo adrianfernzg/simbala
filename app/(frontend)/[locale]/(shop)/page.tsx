@@ -151,7 +151,7 @@ export default async function HomePage({ params }: Props) {
 
       {/* ── CTA final ────────────────────────────────────────── */}
       <section className="border-t-2 border-border px-4 py-24 sm:px-6 lg:px-8">
-        <BorderOrb className="mx-auto max-w-3xl text-center pixel-corners p-12">
+        <BorderOrb className="mx-auto max-w-3xl text-center p-12">
           <p className="font-pixel text-gold glow-gold mb-5" style={{ fontSize: '9px', letterSpacing: '0.2em' }}>
             ✦ PERSONALIZACIÓN ✦
           </p>

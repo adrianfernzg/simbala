@@ -13,11 +13,11 @@ const PIECES = [
 ]
 
 const COLORS = [
+  'rgba(212, 160, 23, 0.55)',
   'rgba(212, 160, 23, 0.45)',
-  'rgba(212, 160, 23, 0.35)',
-  'rgba(232, 192, 37, 0.40)',
-  'rgba(160, 122, 16, 0.50)',
-  'rgba(255, 200, 50, 0.30)',
+  'rgba(232, 192, 37, 0.50)',
+  'rgba(160, 122, 16, 0.60)',
+  'rgba(255, 200, 50, 0.40)',
 ]
 
 const BLOCK = 32
@@ -55,12 +55,12 @@ export function TetrisBackground() {
         y: startY ?? -(shape.length * BLOCK),
         shape,
         color: COLORS[Math.floor(Math.random() * COLORS.length)],
-        speed: 1.0 + Math.random() * 1.4,
+        speed: 1.6 + Math.random() * 2.0,
       })
     }
 
     // Pre-populate canvas on load
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < 18; i++) {
       spawn(Math.random() * (canvas.height + 100))
     }
 
@@ -70,7 +70,7 @@ export function TetrisBackground() {
       if (!canvas || !ctx) return
       ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-      if (t - lastSpawn > 1200) {
+      if (t - lastSpawn > 800) {
         spawn()
         lastSpawn = t
       }

@@ -6,7 +6,7 @@ const TICKER_TEXT =
 export function Ticker() {
   return (
     <div className="overflow-hidden border-y-2 border-gold bg-gold py-2.5" aria-hidden="true">
-      <div className="flex whitespace-nowrap" style={{ animation: 'ticker 30s linear infinite' }}>
+      <div className="flex whitespace-nowrap" style={{ animation: 'ticker 18s linear infinite' }}>
         <span className="font-pixel text-black shrink-0" style={{ fontSize: '8px', letterSpacing: '0.12em' }}>
           {TICKER_TEXT}
         </span>
