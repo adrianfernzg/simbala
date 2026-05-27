@@ -1,9 +1,40 @@
 import type { CollectionConfig } from 'payload'
+import { v2 as cloudinary } from 'cloudinary'
+
+function configureCloudinary() {
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+  })
+}
+
+async function uploadBufferToCloudinary(
+  buffer: Buffer,
+  mimeType: string,
+  filename: string,
+): Promise<{ url: string; publicId: string; width?: number; height?: number }> {
+  configureCloudinary()
+  const dataUri = `data:${mimeType};base64,${buffer.toString('base64')}`
+  const result = await cloudinary.uploader.upload(dataUri, {
+    folder: 'payload/media',
+    use_filename: true,
+    unique_filename: true,
+    resource_type: 'image',
+    public_id: filename.replace(/\.[^.]+$/, ''),
+  })
+  return {
+    url: result.secure_url,
+    publicId: result.public_id,
+    width: result.width,
+    height: result.height,
+  }
+}
 
 export const Media: CollectionConfig = {
   slug: 'media',
   upload: {
-    staticDir: 'public/media',
+    staticDir: '/tmp/payload-media',
     mimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
     imageSizes: [
       { name: 'thumbnail', width: 400, height: 300 },
@@ -16,6 +47,54 @@ export const Media: CollectionConfig = {
     create: ({ req }) => !!req.user,
     update: ({ req }) => req.user?.role === 'admin',
     delete: ({ req }) => req.user?.role === 'admin',
+  },
+  hooks: {
+    afterChange: [
+      async ({ doc, req, operation }) => {
+        if (process.env.NODE_ENV !== 'production') return doc
+        if (operation !== 'create') return doc
+
+        try {
+          const file = req.file
+          if (!file?.data) return doc
+
+          const result = await uploadBufferToCloudinary(
+            file.data as Buffer,
+            file.mimetype,
+            doc.filename as string,
+          )
+
+          await req.payload.update({
+            collection: 'media',
+            id: doc.id,
+            data: {
+              url: result.url,
+              cloudinaryPublicId: result.publicId,
+              ...(result.width && { width: result.width }),
+              ...(result.height && { height: result.height }),
+            },
+          })
+
+          return { ...doc, url: result.url }
+        } catch (err) {
+          req.payload.logger.error({ err }, 'Cloudinary upload failed')
+          return doc
+        }
+      },
+    ],
+    afterDelete: [
+      async ({ doc }) => {
+        if (process.env.NODE_ENV !== 'production') return
+        const publicId = (doc as Record<string, unknown>).cloudinaryPublicId as string | undefined
+        if (!publicId) return
+        try {
+          configureCloudinary()
+          await cloudinary.uploader.destroy(publicId)
+        } catch {
+          // non-critical
+        }
+      },
+    ],
   },
   fields: [
     { name: 'alt', type: 'text', required: true },

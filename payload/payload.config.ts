@@ -2,7 +2,6 @@ import { buildConfig } from 'payload'
 import sharp from 'sharp'
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
-import { cloudStoragePlugin } from '@payloadcms/plugin-cloud-storage'
 import { es } from '@payloadcms/translations/languages/es'
 import { en } from '@payloadcms/translations/languages/en'
 import { Products } from './collections/Products'
@@ -13,7 +12,6 @@ import { BlogCategories } from './collections/BlogCategories'
 import { Users } from './collections/Users'
 import { Clientes } from './collections/Clientes'
 import { Media } from './collections/Media'
-import { cloudinaryAdapter } from './cloudinaryAdapter'
 import * as initialSchema from './migrations/20260521_initial_schema'
 import * as addOrderRef from './migrations/20260525_add_order_ref'
 
@@ -31,17 +29,6 @@ export default buildConfig({
   },
   collections: [Users, Clientes, Products, Categories, Orders, BlogPosts, BlogCategories, Media],
   editor: lexicalEditor(),
-  plugins: [
-    cloudStoragePlugin({
-      enabled: process.env.NODE_ENV === 'production',
-      collections: {
-        media: {
-          adapter: cloudinaryAdapter(),
-          disableLocalStorage: true,
-        },
-      },
-    }),
-  ],
   db: postgresAdapter({
     pool: {
       connectionString: process.env.DATABASE_URL,
