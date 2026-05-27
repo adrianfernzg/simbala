@@ -1,5 +1,30 @@
 @import "tailwindcss";
 
+/* ── Self-hosted retro fonts ───────────────────────────── */
+@font-face {
+  font-family: 'VT323';
+  src: url('/fonts/vt323.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Press Start 2P';
+  src: url('/fonts/press-start-2p.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Bungee';
+  src: url('/fonts/bungee.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme {
   /* Brand colors */
   --color-gold: #d4a017;
@@ -10,7 +35,7 @@
   --color-bg: #0a0a0a;
   --color-surface: #111111;
   --color-surface-raised: #181818;
-  --color-border: #222222;
+  --color-border: #2a2a2a;
   --color-border-subtle: #1a1a1a;
 
   /* Text */
@@ -18,8 +43,11 @@
   --color-text-secondary: #999999;
   --color-text-muted: #555555;
 
-  /* Font */
-  --font-sans: var(--font-geist), system-ui, sans-serif;
+  /* Fonts — using names directly, no CSS variable chain */
+  --font-sans: 'VT323', monospace;
+  --font-pixel: 'Press Start 2P', monospace;
+  --font-arcade: 'Bungee', sans-serif;
+  --font-retro: 'VT323', monospace;
 }
 
 :root {
@@ -32,29 +60,128 @@
 
 body {
   background-color: var(--color-bg);
+  background-image:
+    radial-gradient(rgba(212, 160, 23, 0.04) 1px, transparent 1px);
+  background-size: 28px 28px;
   color: var(--color-text-primary);
   font-family: var(--font-sans);
+  font-size: 20px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+/* ── Fuentes retro ─────────────────────────────────────── */
+.font-pixel  { font-family: var(--font-pixel); }
+.font-arcade { font-family: var(--font-arcade); }
+
+/* ── Pixel border ──────────────────────────────────────── */
+.pixel-box {
+  border: 2px solid var(--color-border);
+  box-shadow: 3px 3px 0 0 var(--color-border);
+  transition: box-shadow 0.15s, border-color 0.15s;
 }
-::-webkit-scrollbar-track {
-  background: var(--color-bg);
+.pixel-box:hover {
+  border-color: var(--color-gold);
+  box-shadow: 3px 3px 0 0 var(--color-gold-muted);
 }
-::-webkit-scrollbar-thumb {
-  background: #333;
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-gold-muted);
+.pixel-box-gold {
+  border: 2px solid var(--color-gold);
+  box-shadow: 3px 3px 0 0 var(--color-gold-muted);
 }
 
-/* Selection */
+/* ── Scanlines overlay ─────────────────────────────────── */
+.scanlines {
+  position: relative;
+}
+.scanlines::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0, 0, 0, 0.10) 3px,
+    rgba(0, 0, 0, 0.10) 4px
+  );
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* ── Gold glow ─────────────────────────────────────────── */
+.glow-gold {
+  text-shadow:
+    0 0 10px rgba(212, 160, 23, 0.8),
+    0 0 25px rgba(212, 160, 23, 0.4),
+    0 0 50px rgba(212, 160, 23, 0.15);
+}
+.glow-gold-box {
+  box-shadow:
+    0 0 8px rgba(212, 160, 23, 0.4),
+    0 0 20px rgba(212, 160, 23, 0.15),
+    3px 3px 0 0 var(--color-gold-muted);
+}
+
+/* ── Ticker ────────────────────────────────────────────── */
+@keyframes ticker {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* ── Blink cursor ──────────────────────────────────────── */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+.blink { animation: blink 1s step-end infinite; }
+
+/* ── CRT flicker on hover ──────────────────────────────── */
+@keyframes flicker {
+  0%   { opacity: 1; }
+  92%  { opacity: 1; }
+  93%  { opacity: 0.85; }
+  94%  { opacity: 1; }
+  98%  { opacity: 1; }
+  99%  { opacity: 0.9; }
+  100% { opacity: 1; }
+}
+.crt-flicker { animation: flicker 6s infinite; }
+
+/* ── Corner decoration ─────────────────────────────────── */
+.pixel-corners {
+  position: relative;
+}
+.pixel-corners::before,
+.pixel-corners::after {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-color: var(--color-gold);
+  border-style: solid;
+  opacity: 0.6;
+}
+.pixel-corners::before {
+  top: 6px;
+  left: 6px;
+  border-width: 2px 0 0 2px;
+}
+.pixel-corners::after {
+  bottom: 6px;
+  right: 6px;
+  border-width: 0 2px 2px 0;
+}
+
+/* ── Scrollbar ─────────────────────────────────────────── */
+::-webkit-scrollbar       { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--color-bg); }
+::-webkit-scrollbar-thumb {
+  background: var(--color-gold-muted);
+  border-radius: 0;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--color-gold); }
+
+/* ── Selection ─────────────────────────────────────────── */
 ::selection {
   background: var(--color-gold);
   color: #000;

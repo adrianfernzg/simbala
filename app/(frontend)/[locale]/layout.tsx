@@ -1,15 +1,9 @@
 import type { Metadata } from 'next'
-import { Geist } from 'next/font/google'
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 import { routing } from '@/i18n/routing'
 import '../../globals.css'
-
-const geist = Geist({
-  variable: '--font-geist',
-  subsets: ['latin'],
-})
 
 export const metadata: Metadata = {
   title: {
@@ -45,7 +39,7 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   return (
     <html lang={locale} className="dark">
-      <body className={`${geist.variable} antialiased`}>
+      <body className="antialiased">
         <NextIntlClientProvider messages={messages}>
           {children}
         </NextIntlClientProvider>

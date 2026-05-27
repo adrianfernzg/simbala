@@ -21,30 +21,39 @@ export function Header({ locale, userName }: HeaderProps) {
   ]
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-bg/95 backdrop-blur-md">
+    <header className="sticky top-0 z-50 bg-bg/95 backdrop-blur-md"
+      style={{ borderBottom: '2px solid #2a2a2a', boxShadow: '0 2px 0 0 #1a1a1a, 0 0 20px rgba(212,160,23,0.06)' }}
+    >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
 
         {/* Logo */}
-        <Link href={`/${locale}`} className="flex items-center gap-3 group">
-          {/* Icono arcade */}
-          <svg className="h-7 w-7 text-gold" viewBox="0 0 32 32" fill="currentColor">
+        <Link href={`/${locale}`} className="group flex items-center gap-3">
+          <svg className="h-8 w-8 text-gold crt-flicker" viewBox="0 0 32 32" fill="currentColor">
             <path d="M10 5 L22 5 L24.5 9 L24.5 22 L22 25 L10 25 L7.5 22 L7.5 9 Z" fillOpacity="0.15" stroke="currentColor" strokeWidth="1.5"/>
-            <rect x="11" y="9" width="10" height="6" rx="0.5" fill="none" stroke="currentColor" strokeWidth="1"/>
+            <rect x="11" y="9" width="10" height="6" rx="0" fill="none" stroke="currentColor" strokeWidth="1.5"/>
             <circle cx="14" cy="19.5" r="1.5"/>
-            <circle cx="18" cy="19.5" r="1"/>
-            <circle cx="20.5" cy="19.5" r="1"/>
-            <rect x="11" y="25" width="3" height="2" rx="0.5"/>
-            <rect x="18" y="25" width="3" height="2" rx="0.5"/>
+            <circle cx="18" cy="19.5" r="1.2"/>
+            <circle cx="21" cy="19.5" r="1.2"/>
+            <rect x="11" y="25" width="3" height="2"/>
+            <rect x="18" y="25" width="3" height="2"/>
           </svg>
-          <div className="flex flex-col leading-none">
-            <span className="text-sm font-bold tracking-[0.15em] uppercase text-gold group-hover:text-gold-light transition-colors">
-              Simbala Arcade
+          <div className="flex flex-col leading-none gap-0.5">
+            <span
+              className="font-pixel text-gold group-hover:text-gold-light transition-colors glow-gold"
+              style={{ fontSize: '9px', letterSpacing: '0.05em' }}
+            >
+              SIMBALA
             </span>
-            <span className="text-[9px] tracking-[0.3em] uppercase text-text-muted">Valencia</span>
+            <span
+              className="font-pixel text-gold-muted"
+              style={{ fontSize: '6px', letterSpacing: '0.15em' }}
+            >
+              ARCADE · VLC
+            </span>
           </div>
         </Link>
 
-        {/* Nav central */}
+        {/* Nav */}
         <nav aria-label="Navegación principal">
           <ul className="hidden items-center gap-8 md:flex">
             {navLinks.map(({ href, label }) => {
@@ -54,13 +63,16 @@ export function Header({ locale, userName }: HeaderProps) {
                   <Link
                     href={href}
                     className={[
-                      'text-xs font-medium tracking-widest uppercase transition-colors relative py-1',
-                      'after:absolute after:bottom-0 after:left-0 after:h-px after:bg-gold after:transition-all after:duration-200',
+                      'relative text-base font-semibold tracking-[0.15em] uppercase transition-all duration-150 py-1 px-0.5',
                       isActive
-                        ? 'text-gold after:w-full'
-                        : 'text-text-secondary hover:text-text-primary after:w-0 hover:after:w-full',
+                        ? 'text-gold glow-gold'
+                        : 'text-text-secondary hover:text-gold',
                     ].join(' ')}
+                    style={isActive ? {} : {}}
                   >
+                    {isActive && (
+                      <span className="absolute -left-2 top-1/2 -translate-y-1/2 text-gold text-xs">▶</span>
+                    )}
                     {label}
                   </Link>
                 </li>
@@ -84,13 +96,13 @@ export function Header({ locale, userName }: HeaderProps) {
           </Link>
 
           {userName ? (
-            <span className="ml-2 hidden text-xs tracking-widest text-text-muted sm:block">
-              {userName.split(' ')[0]}
+            <span className="ml-2 hidden text-[10px] tracking-widest text-gold font-pixel sm:block" style={{ fontSize: '8px' }}>
+              {userName.split(' ')[0].toUpperCase()}
             </span>
           ) : (
             <Link
               href={`/${locale}/login`}
-              className="ml-2 border border-gold px-4 py-2 text-xs font-medium tracking-widest uppercase text-gold hover:bg-gold hover:text-black transition-all duration-200"
+              className="ml-2 px-4 py-2 text-[10px] font-semibold tracking-widest uppercase text-gold transition-all duration-150 pixel-box-gold hover:bg-gold hover:text-black"
             >
               {t('login')}
             </Link>
