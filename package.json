@@ -16,6 +16,7 @@
     "@auth/prisma-adapter": "^2.7.4",
     "@payloadcms/db-postgres": "^3.0.0",
     "@payloadcms/next": "^3.0.0",
+    "@payloadcms/plugin-cloud-storage": "^3.85.0",
     "@payloadcms/richtext-lexical": "^3.0.0",
     "@prisma/client": "^5.22.0",
     "@upstash/ratelimit": "^2.0.5",

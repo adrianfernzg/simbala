@@ -19,5 +19,6 @@ export const Media: CollectionConfig = {
   },
   fields: [
     { name: 'alt', type: 'text', required: true },
+    { name: 'cloudinaryPublicId', type: 'text', admin: { hidden: true } },
   ],
 }
