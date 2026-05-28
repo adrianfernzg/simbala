@@ -15,6 +15,7 @@ import { Media } from './collections/Media'
 import * as initialSchema from './migrations/20260521_initial_schema'
 import * as addOrderRef from './migrations/20260525_add_order_ref'
 import * as addCloudinaryPublicId from './migrations/20260527_add_cloudinary_public_id'
+import * as fixProductsImagesCascade from './migrations/20260528_fix_products_images_cascade'
 
 export default buildConfig({
   serverURL: process.env.NEXT_PUBLIC_APP_URL ?? '',
@@ -40,6 +41,7 @@ export default buildConfig({
       { ...initialSchema, name: '20260521_initial_schema' },
       { ...addOrderRef, name: '20260525_add_order_ref' },
       { ...addCloudinaryPublicId, name: '20260527_add_cloudinary_public_id' },
+      { ...fixProductsImagesCascade, name: '20260528_fix_products_images_cascade' },
     ],
   }),
   sharp,

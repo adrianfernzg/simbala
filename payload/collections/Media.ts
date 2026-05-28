@@ -13,6 +13,11 @@ function configureCloudinary() {
   })
 }
 
+function cloudinaryTransformUrl(publicId: string, transform: string): string {
+  const cloud = process.env.CLOUDINARY_CLOUD_NAME
+  return `https://res.cloudinary.com/${cloud}/image/upload/${transform}/${publicId}`
+}
+
 async function uploadToCloudinary(
   filePath: string,
   mimeType: string,
@@ -68,16 +73,30 @@ export const Media: CollectionConfig = {
         try {
           const result = await uploadToCloudinary(filePath, mimeType, filename)
 
-          // Direct pg pool query — avoids Payload transaction visibility issue in afterChange
+          // Build Cloudinary transformation URLs for image sizes
+          const thumbUrl = cloudinaryTransformUrl(result.publicId, 'c_fill,w_400,h_300')
+          const cardUrl  = cloudinaryTransformUrl(result.publicId, 'c_fill,w_800,h_600')
+          const ogUrl    = cloudinaryTransformUrl(result.publicId, 'c_fill,w_1200,h_630')
+
           const pool = (req.payload.db as any).pool
           await pool.query(
-            'UPDATE payload.media SET url = $1, cloudinary_public_id = $2 WHERE id = $3',
-            [result.url, result.publicId, doc.id],
+            `UPDATE payload.media SET
+               url = $1,
+               cloudinary_public_id = $2,
+               sizes_thumbnail_url = $3,
+               sizes_card_url = $4,
+               sizes_og_url = $5
+             WHERE id = $6`,
+            [result.url, result.publicId, thumbUrl, cardUrl, ogUrl, doc.id],
           )
 
+          // clean up temp files, non-blocking
           unlink(filePath).catch(() => {})
+          unlink(join(STATIC_DIR, filename.replace(/(\.[^.]+)$/, '-400x300$1'))).catch(() => {})
+          unlink(join(STATIC_DIR, filename.replace(/(\.[^.]+)$/, '-800x600$1'))).catch(() => {})
+          unlink(join(STATIC_DIR, filename.replace(/(\.[^.]+)$/, '-1200x630$1'))).catch(() => {})
 
-          return { ...doc, url: result.url, cloudinaryPublicId: result.publicId }
+          return { ...doc, url: result.url }
         } catch (err) {
           req.payload.logger.error({ err }, 'Cloudinary upload failed')
           return doc
