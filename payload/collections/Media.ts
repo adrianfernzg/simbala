@@ -1,5 +1,9 @@
 import type { CollectionConfig } from 'payload'
 import { v2 as cloudinary } from 'cloudinary'
+import { readFile, unlink } from 'fs/promises'
+import { join } from 'path'
+
+const STATIC_DIR = '/tmp/payload-media'
 
 function configureCloudinary() {
   cloudinary.config({
@@ -9,12 +13,13 @@ function configureCloudinary() {
   })
 }
 
-async function uploadBufferToCloudinary(
-  buffer: Buffer,
+async function uploadToCloudinary(
+  filePath: string,
   mimeType: string,
   filename: string,
 ): Promise<{ url: string; publicId: string; width?: number; height?: number }> {
   configureCloudinary()
+  const buffer = await readFile(filePath)
   const dataUri = `data:${mimeType};base64,${buffer.toString('base64')}`
   const result = await cloudinary.uploader.upload(dataUri, {
     folder: 'payload/media',
@@ -34,7 +39,7 @@ async function uploadBufferToCloudinary(
 export const Media: CollectionConfig = {
   slug: 'media',
   upload: {
-    staticDir: '/tmp/payload-media',
+    staticDir: STATIC_DIR,
     mimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
     imageSizes: [
       { name: 'thumbnail', width: 400, height: 300 },
@@ -54,28 +59,26 @@ export const Media: CollectionConfig = {
         if (process.env.NODE_ENV !== 'production') return doc
         if (operation !== 'create') return doc
 
-        try {
-          const file = req.file
-          if (!file?.data) return doc
+        const filename = doc.filename as string
+        const mimeType = (doc.mimeType as string) ?? 'image/jpeg'
+        if (!filename) return doc
 
-          const result = await uploadBufferToCloudinary(
-            file.data as Buffer,
-            file.mimetype,
-            doc.filename as string,
-          )
+        const filePath = join(STATIC_DIR, filename)
+
+        try {
+          const result = await uploadToCloudinary(filePath, mimeType, filename)
 
           await req.payload.update({
             collection: 'media',
             id: doc.id,
-            data: {
-              url: result.url,
-              cloudinaryPublicId: result.publicId,
-              ...(result.width && { width: result.width }),
-              ...(result.height && { height: result.height }),
-            },
+            data: { url: result.url, cloudinaryPublicId: result.publicId },
+            overrideAccess: true,
           })
 
-          return { ...doc, url: result.url }
+          // clean up temp file, non-blocking
+          unlink(filePath).catch(() => {})
+
+          return { ...doc, url: result.url, cloudinaryPublicId: result.publicId }
         } catch (err) {
           req.payload.logger.error({ err }, 'Cloudinary upload failed')
           return doc
@@ -85,7 +88,9 @@ export const Media: CollectionConfig = {
     afterDelete: [
       async ({ doc }) => {
         if (process.env.NODE_ENV !== 'production') return
-        const publicId = (doc as Record<string, unknown>).cloudinaryPublicId as string | undefined
+        const publicId = (doc as unknown as Record<string, unknown>).cloudinaryPublicId as
+          | string
+          | undefined
         if (!publicId) return
         try {
           configureCloudinary()
