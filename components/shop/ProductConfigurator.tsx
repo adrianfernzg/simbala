@@ -18,6 +18,7 @@ export type SelectOption = {
   label: string
   value: string
   priceModifier: number
+  imageUrl?: string | null
 }
 
 export type ConfigExtra = {
@@ -181,13 +182,13 @@ export function ProductConfigurator({
       <div className="space-y-3">
 
         {/* Imagen principal con flechas de navegación */}
-        <figure className="group relative aspect-[4/3] overflow-hidden border border-border bg-surface-raised">
+        <figure className="group relative aspect-[682/980] overflow-hidden border border-border bg-surface-raised">
           {activeImageUrl ? (
             <Image
               src={activeImageUrl}
               alt={`${productName} — Simbala Arcade`}
               fill
-              className="object-cover transition-opacity duration-300"
+              className="object-contain transition-opacity duration-300"
               priority
               sizes="(max-width: 1024px) 100vw, 50vw"
             />
@@ -464,6 +465,11 @@ export function ProductConfigurator({
                                     'h-3.5 w-3.5 shrink-0 rounded-full border transition-all',
                                     sel ? 'border-gold bg-gold' : 'border-border',
                                   ].join(' ')} />
+                                  {opt.imageUrl && (
+                                    <div className="relative h-12 w-12 shrink-0 overflow-hidden border border-border">
+                                      <Image src={opt.imageUrl} alt={opt.label} fill className="object-cover" sizes="48px" />
+                                    </div>
+                                  )}
                                   <span className="text-sm text-text-primary">{opt.label}</span>
                                   {opt.priceModifier !== 0 && (
                                     <span className="ml-auto text-xs text-gold">

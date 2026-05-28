@@ -17,6 +17,7 @@ import * as addOrderRef from './migrations/20260525_add_order_ref'
 import * as addCloudinaryPublicId from './migrations/20260527_add_cloudinary_public_id'
 import * as fixProductsImagesCascade from './migrations/20260528_fix_products_images_cascade'
 import * as addCoverImageToProducts from './migrations/20260528_add_cover_image_to_products'
+import * as addOptionImage from './migrations/20260528_add_option_image'
 
 export default buildConfig({
   serverURL: process.env.NEXT_PUBLIC_APP_URL ?? '',
@@ -44,6 +45,7 @@ export default buildConfig({
       { ...addCloudinaryPublicId, name: '20260527_add_cloudinary_public_id' },
       { ...fixProductsImagesCascade, name: '20260528_fix_products_images_cascade' },
       { ...addCoverImageToProducts, name: '20260528_add_cover_image_to_products' },
+      { ...addOptionImage, name: '20260528_add_option_image' },
     ],
   }),
   sharp,

@@ -174,6 +174,12 @@ export const Products: CollectionConfig = {
               defaultValue: 0,
               admin: { description: 'Precio adicional de esta opción en euros (puede ser 0)' },
             },
+            {
+              name: 'image',
+              type: 'upload',
+              relationTo: 'media',
+              admin: { description: 'Imagen ilustrativa de esta opción (opcional)' },
+            },
           ],
         },
         {

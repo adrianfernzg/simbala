@@ -54,7 +54,7 @@ export function ProductCard({ product, locale }: ProductCardProps) {
       {/* Imagen de portada — aspect-square para mostrar la imagen completa */}
       <Link
         href={`/${locale}/product/${product.slug}`}
-        className="relative aspect-square overflow-hidden bg-surface-raised scanlines"
+        className="relative aspect-square overflow-hidden bg-surface-raised"
       >
         {imageUrl ? (
           <Image

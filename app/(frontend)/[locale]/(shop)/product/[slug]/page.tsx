@@ -110,6 +110,7 @@ export default async function ProductPage({ params }: Props) {
         label: o.label as string,
         value: o.value as string,
         priceModifier: Number(o.priceModifier ?? 0),
+        imageUrl: getImageUrl(o.image as Media | string | null, 'card'),
       })
     ),
   }))
