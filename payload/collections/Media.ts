@@ -59,6 +59,38 @@ export const Media: CollectionConfig = {
     delete: ({ req }) => req.user?.role === 'admin',
   },
   hooks: {
+    // Reconstruct all URLs from cloudinaryPublicId on every read so the
+    // admin panel and frontend always get Cloudinary URLs, regardless of
+    // what is stored in the url/sizes_*_url columns.
+    afterRead: [
+      ({ doc }) => {
+        const raw = doc as Record<string, unknown>
+        const publicId = raw.cloudinaryPublicId as string | undefined
+        if (!publicId) return doc
+        const cloud = process.env.CLOUDINARY_CLOUD_NAME
+        return {
+          ...doc,
+          url: `https://res.cloudinary.com/${cloud}/image/upload/${publicId}`,
+          sizes: {
+            thumbnail: {
+              url: cloudinaryTransformUrl(publicId, 'c_fill,w_400,h_300'),
+              width: 400,
+              height: 300,
+            },
+            card: {
+              url: cloudinaryTransformUrl(publicId, 'c_fill,w_800,h_600'),
+              width: 800,
+              height: 600,
+            },
+            og: {
+              url: cloudinaryTransformUrl(publicId, 'c_fill,w_1200,h_630'),
+              width: 1200,
+              height: 630,
+            },
+          },
+        }
+      },
+    ],
     afterChange: [
       async ({ doc, req, operation }) => {
         if (process.env.NODE_ENV !== 'production') return doc
@@ -73,21 +105,10 @@ export const Media: CollectionConfig = {
         try {
           const result = await uploadToCloudinary(filePath, mimeType, filename)
 
-          // Build Cloudinary transformation URLs for image sizes
-          const thumbUrl = cloudinaryTransformUrl(result.publicId, 'c_fill,w_400,h_300')
-          const cardUrl  = cloudinaryTransformUrl(result.publicId, 'c_fill,w_800,h_600')
-          const ogUrl    = cloudinaryTransformUrl(result.publicId, 'c_fill,w_1200,h_630')
-
           const pool = (req.payload.db as any).pool
           await pool.query(
-            `UPDATE payload.media SET
-               url = $1,
-               cloudinary_public_id = $2,
-               sizes_thumbnail_url = $3,
-               sizes_card_url = $4,
-               sizes_og_url = $5
-             WHERE id = $6`,
-            [result.url, result.publicId, thumbUrl, cardUrl, ogUrl, doc.id],
+            `UPDATE payload.media SET url = $1, cloudinary_public_id = $2 WHERE id = $3`,
+            [result.url, result.publicId, doc.id],
           )
 
           // clean up temp files, non-blocking
@@ -96,7 +117,7 @@ export const Media: CollectionConfig = {
           unlink(join(STATIC_DIR, filename.replace(/(\.[^.]+)$/, '-800x600$1'))).catch(() => {})
           unlink(join(STATIC_DIR, filename.replace(/(\.[^.]+)$/, '-1200x630$1'))).catch(() => {})
 
-          return { ...doc, url: result.url }
+          return { ...doc, url: result.url, cloudinaryPublicId: result.publicId }
         } catch (err) {
           req.payload.logger.error({ err }, 'Cloudinary upload failed')
           return doc
