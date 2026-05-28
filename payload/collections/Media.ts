@@ -68,10 +68,10 @@ export const Media: CollectionConfig = {
         try {
           const result = await uploadToCloudinary(filePath, mimeType, filename)
 
-          // Direct DB update — avoids Payload transaction visibility issue in afterChange
-          const adapter = req.payload.db as any
-          await adapter.drizzle.execute(
-            `UPDATE payload.media SET url = $1, cloudinary_public_id = $2 WHERE id = $3`,
+          // Direct pg pool query — avoids Payload transaction visibility issue in afterChange
+          const pool = (req.payload.db as any).pool
+          await pool.query(
+            'UPDATE payload.media SET url = $1, cloudinary_public_id = $2 WHERE id = $3',
             [result.url, result.publicId, doc.id],
           )
 
