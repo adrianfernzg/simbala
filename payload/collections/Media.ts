@@ -59,9 +59,45 @@ export const Media: CollectionConfig = {
     delete: ({ req }) => req.user?.role === 'admin',
   },
   hooks: {
-    // Reconstruct all URLs from cloudinaryPublicId on every read so the
-    // admin panel and frontend always get Cloudinary URLs, regardless of
-    // what is stored in the url/sizes_*_url columns.
+    // Run BEFORE the INSERT so the returned data is written to DB directly —
+    // avoids the transaction-visibility issue that makes pool.query UPDATE
+    // match 0 rows when called from afterChange.
+    beforeChange: [
+      async ({ data, req, operation }) => {
+        if (process.env.NODE_ENV !== 'production') return data
+        if (operation !== 'create') return data
+
+        const filename = data.filename as string | undefined
+        const mimeType = (data.mimeType as string) ?? 'image/jpeg'
+        if (!filename) return data
+
+        const filePath = join(STATIC_DIR, filename)
+        req.payload.logger.info({ msg: `[Media] beforeChange: uploading ${filename} to Cloudinary` })
+
+        try {
+          const result = await uploadToCloudinary(filePath, mimeType, filename)
+          req.payload.logger.info({ msg: `[Media] beforeChange: OK ${result.publicId}` })
+
+          // Delete local files immediately — they are no longer needed.
+          unlink(filePath).catch(() => {})
+          unlink(join(STATIC_DIR, filename.replace(/(\.[^.]+)$/, '-400x300$1'))).catch(() => {})
+          unlink(join(STATIC_DIR, filename.replace(/(\.[^.]+)$/, '-800x600$1'))).catch(() => {})
+          unlink(join(STATIC_DIR, filename.replace(/(\.[^.]+)$/, '-1200x630$1'))).catch(() => {})
+
+          // The returned data is what Payload inserts into the DB.
+          return {
+            ...data,
+            url: result.url,
+            cloudinaryPublicId: result.publicId,
+          }
+        } catch (err) {
+          req.payload.logger.error({ err, msg: '[Media] beforeChange: Cloudinary upload failed' })
+          return data
+        }
+      },
+    ],
+    // afterRead: always reconstruct URLs from cloudinaryPublicId when present.
+    // Safety net for records that somehow have a wrong url in the DB.
     afterRead: [
       ({ doc }) => {
         const raw = doc as Record<string, unknown>
@@ -88,39 +124,6 @@ export const Media: CollectionConfig = {
               height: 630,
             },
           },
-        }
-      },
-    ],
-    afterChange: [
-      async ({ doc, req, operation }) => {
-        if (process.env.NODE_ENV !== 'production') return doc
-        if (operation !== 'create') return doc
-
-        const filename = doc.filename as string
-        const mimeType = (doc.mimeType as string) ?? 'image/jpeg'
-        if (!filename) return doc
-
-        const filePath = join(STATIC_DIR, filename)
-
-        try {
-          const result = await uploadToCloudinary(filePath, mimeType, filename)
-
-          const pool = (req.payload.db as any).pool
-          await pool.query(
-            `UPDATE payload.media SET url = $1, cloudinary_public_id = $2 WHERE id = $3`,
-            [result.url, result.publicId, doc.id],
-          )
-
-          // clean up temp files, non-blocking
-          unlink(filePath).catch(() => {})
-          unlink(join(STATIC_DIR, filename.replace(/(\.[^.]+)$/, '-400x300$1'))).catch(() => {})
-          unlink(join(STATIC_DIR, filename.replace(/(\.[^.]+)$/, '-800x600$1'))).catch(() => {})
-          unlink(join(STATIC_DIR, filename.replace(/(\.[^.]+)$/, '-1200x630$1'))).catch(() => {})
-
-          return { ...doc, url: result.url, cloudinaryPublicId: result.publicId }
-        } catch (err) {
-          req.payload.logger.error({ err }, 'Cloudinary upload failed')
-          return doc
         }
       },
     ],
