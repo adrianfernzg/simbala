@@ -68,14 +68,13 @@ export const Media: CollectionConfig = {
         try {
           const result = await uploadToCloudinary(filePath, mimeType, filename)
 
-          await req.payload.update({
-            collection: 'media',
-            id: doc.id,
-            data: { url: result.url, cloudinaryPublicId: result.publicId },
-            overrideAccess: true,
-          })
+          // Direct DB update — avoids Payload transaction visibility issue in afterChange
+          const adapter = req.payload.db as any
+          await adapter.drizzle.execute(
+            `UPDATE payload.media SET url = $1, cloudinary_public_id = $2 WHERE id = $3`,
+            [result.url, result.publicId, doc.id],
+          )
 
-          // clean up temp file, non-blocking
           unlink(filePath).catch(() => {})
 
           return { ...doc, url: result.url, cloudinaryPublicId: result.publicId }
