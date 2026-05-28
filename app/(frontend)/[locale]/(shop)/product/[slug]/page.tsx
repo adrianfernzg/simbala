@@ -93,6 +93,9 @@ export default async function ProductPage({ params }: Props) {
     name: v.name as string,
     imageUrl: getImageUrl(v.image as Media | string | null, 'card'),
     priceModifier: Number(v.priceModifier ?? 0),
+    images: ((v.images ?? []) as Array<Record<string, unknown>>)
+      .map((img) => getImageUrl(img.image as Media | string | null, 'original'))
+      .filter((url): url is string => !!url),
   }))
 
   // Extras con opciones para selects

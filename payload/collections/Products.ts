@@ -101,6 +101,22 @@ export const Products: CollectionConfig = {
           min: 0,
           admin: { description: 'Precio adicional en euros (0 si está incluido en el precio base)' },
         },
+        {
+          name: 'images',
+          type: 'array',
+          label: 'Galería del vinilo',
+          admin: {
+            description: 'Imágenes que se mostrarán en el configurador cuando este vinilo esté seleccionado. Si no se añaden, se usará la imagen del vinilo.',
+          },
+          fields: [
+            {
+              name: 'image',
+              type: 'upload',
+              relationTo: 'media',
+              required: true,
+            },
+          ],
+        },
       ],
     },
     {

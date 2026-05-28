@@ -11,6 +11,7 @@ export type VinylOption = {
   name: string
   imageUrl: string | null
   priceModifier: number
+  images: Array<string>
 }
 
 export type SelectOption = {
@@ -75,13 +76,20 @@ export function ProductConfigurator({
   const stripRef = useRef<HTMLUListElement>(null)
 
   const selectedVinyl = vinyls.find((v) => v.id === selectedVinylId) ?? null
-  // Cuando hay vinilo seleccionado muestra su imagen; si no, la imagen del producto activa
-  const activeImageUrl = selectedVinyl?.imageUrl ?? productImages[activeIdx] ?? null
+
+  // Active gallery: vinyl images when a vinyl with gallery is selected, otherwise product images
+  const activeGallery: string[] =
+    selectedVinyl && selectedVinyl.images.length > 0
+      ? selectedVinyl.images
+      : productImages
+
+  const activeImageUrl =
+    activeGallery[activeIdx] ?? selectedVinyl?.imageUrl ?? null
 
   // ── Navegación galería (solo entre imágenes del producto) ─
   const goTo = useCallback(
     (idx: number) => {
-      const clamped = Math.max(0, Math.min(idx, productImages.length - 1))
+      const clamped = Math.max(0, Math.min(idx, activeGallery.length - 1))
       setActiveIdx(clamped)
       const strip = stripRef.current
       if (strip) {
@@ -89,7 +97,7 @@ export function ProductConfigurator({
         thumb?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })
       }
     },
-    [productImages.length]
+    [activeGallery.length]
   )
 
   const prev = () => goTo(activeIdx - 1)
@@ -97,6 +105,7 @@ export function ProductConfigurator({
 
   function handleVinylSectionClick(vinyl: VinylOption) {
     setSelectedVinylId((prev) => (prev === vinyl.id ? null : vinyl.id))
+    setActiveIdx(0)
   }
 
   // ── Precio ───────────────────────────────────────────────
@@ -173,7 +182,7 @@ export function ProductConfigurator({
     [...textValues.values()].some((v) => v.trim())
 
   const canPrev = activeIdx > 0
-  const canNext = activeIdx < productImages.length - 1
+  const canNext = activeIdx < activeGallery.length - 1
 
   return (
     <div className="grid grid-cols-1 gap-16 lg:grid-cols-2">
@@ -188,7 +197,7 @@ export function ProductConfigurator({
               src={activeImageUrl}
               alt={`${productName} — Simbala Arcade`}
               fill
-              className="object-contain transition-opacity duration-300"
+              className="object-cover transition-opacity duration-300"
               priority
               sizes="(max-width: 1024px) 100vw, 50vw"
             />
@@ -203,8 +212,8 @@ export function ProductConfigurator({
             </div>
           )}
 
-          {/* Flechas — solo si hay más de 1 imagen de producto */}
-          {productImages.length > 1 && (
+          {/* Flechas — solo si hay más de 1 imagen en la galería activa */}
+          {activeGallery.length > 1 && (
             <>
               <button
                 type="button"
@@ -242,9 +251,9 @@ export function ProductConfigurator({
           )}
 
           {/* Badge contador */}
-          {productImages.length > 1 && (
+          {activeGallery.length > 1 && (
             <div className="absolute bottom-3 right-3 bg-black/60 px-2 py-1 text-[9px] uppercase tracking-widest text-text-muted backdrop-blur-sm">
-              {activeIdx + 1} / {productImages.length}
+              {activeIdx + 1} / {activeGallery.length}
             </div>
           )}
 
@@ -257,8 +266,8 @@ export function ProductConfigurator({
           )}
         </figure>
 
-        {/* Tira de miniaturas — solo imágenes del producto */}
-        {productImages.length > 1 && (
+        {/* Tira de miniaturas — galería activa (producto o vinilo) */}
+        {activeGallery.length > 1 && (
           <div className="relative">
             <ul
               ref={stripRef}
@@ -266,7 +275,7 @@ export function ProductConfigurator({
               style={{ scrollbarWidth: 'thin' }}
               aria-label="Imágenes del producto"
             >
-              {productImages.map((url, idx) => {
+              {activeGallery.map((url, idx) => {
                 const isActive = idx === activeIdx
                 return (
                   <li key={idx} className="shrink-0">
@@ -316,7 +325,7 @@ export function ProductConfigurator({
               {selectedVinyl && (
                 <button
                   type="button"
-                  onClick={() => { setSelectedVinylId(null); goTo(0) }}
+                  onClick={() => { setSelectedVinylId(null); setActiveIdx(0) }}
                   className="text-[10px] uppercase tracking-widest text-text-muted hover:text-text-secondary transition-colors"
                 >
                   Quitar
