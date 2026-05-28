@@ -43,7 +43,7 @@ export const Media: CollectionConfig = {
     mimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
     imageSizes: [
       { name: 'thumbnail', width: 400, height: 300 },
-      { name: 'card', width: 800, height: 600 },
+      { name: 'card', width: 600, height: 600 },
       { name: 'og', width: 1200, height: 630 },
     ],
   },
@@ -93,7 +93,7 @@ export const Media: CollectionConfig = {
               // Clean up local files only after confirming the DB was updated
               unlink(filePath).catch(() => {})
               unlink(join(STATIC_DIR, filename.replace(/(\.[^.]+)$/, '-400x300$1'))).catch(() => {})
-              unlink(join(STATIC_DIR, filename.replace(/(\.[^.]+)$/, '-800x600$1'))).catch(() => {})
+              unlink(join(STATIC_DIR, filename.replace(/(\.[^.]+)$/, '-600x600$1'))).catch(() => {})
               unlink(join(STATIC_DIR, filename.replace(/(\.[^.]+)$/, '-1200x630$1'))).catch(() => {})
             } else {
               logger.warn({ msg: `[Media] UPDATE matched 0 rows — transaction may not be committed yet. Will not delete local files.` })
@@ -124,8 +124,8 @@ export const Media: CollectionConfig = {
               height: 300,
             },
             card: {
-              url: cloudinaryTransformUrl(publicId, 'c_fill,w_800,h_600'),
-              width: 800,
+              url: cloudinaryTransformUrl(publicId, 'c_fill,w_600,h_600'),
+              width: 600,
               height: 600,
             },
             og: {

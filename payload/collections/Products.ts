@@ -50,6 +50,15 @@ export const Products: CollectionConfig = {
       admin: { description: 'Precio base en euros' },
     },
     {
+      name: 'coverImage',
+      type: 'upload',
+      relationTo: 'media',
+      admin: {
+        description: 'Imagen de portada — solo visible en el listado de productos. Si no se define, se usa la primera imagen del producto.',
+        position: 'sidebar',
+      },
+    },
+    {
       name: 'images',
       type: 'array',
       label: 'Imágenes del producto',

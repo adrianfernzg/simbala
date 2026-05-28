@@ -10,6 +10,7 @@ type PayloadProduct = {
   name: string
   slug: string
   basePrice: number
+  coverImage?: Media | string | null
   images?: Array<{ image: Media | string }>
   category: Category | string
 }
@@ -19,24 +20,41 @@ interface ProductCardProps {
   locale: string
 }
 
+function resolveCardUrl(product: PayloadProduct): string | null {
+  // Prefer explicit cover image
+  const cover = product.coverImage
+  if (cover && typeof cover === 'object' && cover.url) {
+    return cover.sizes?.card?.url ?? cover.url
+  }
+  // Fallback: first gallery image
+  const first = product.images?.[0]?.image
+  if (!first) return null
+  if (typeof first === 'string') return first
+  return first.sizes?.card?.url ?? first.url ?? null
+}
+
 export function ProductCard({ product, locale }: ProductCardProps) {
   const price = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(
     Number(product.basePrice)
   )
 
-  const firstImage = product.images?.[0]?.image
-  const imageUrl = typeof firstImage === 'object'
-    ? (firstImage?.sizes?.card?.url ?? firstImage?.url ?? null)
+  const imageUrl = resolveCardUrl(product)
+
+  const coverObj = product.coverImage && typeof product.coverImage === 'object'
+    ? product.coverImage
     : null
-  const imageAlt = typeof firstImage === 'object' ? (firstImage?.alt ?? product.name) : product.name
+  const firstImageObj = product.images?.[0]?.image
+  const firstImage = typeof firstImageObj === 'object' ? firstImageObj : null
+  const imageAlt = coverObj?.alt ?? firstImage?.alt ?? (product.name as string)
+
   const categoryName = typeof product.category === 'object' ? product.category.name : ''
 
   return (
     <article className="group flex flex-col overflow-hidden bg-surface pixel-box">
-      {/* Imagen con scanlines */}
+      {/* Imagen de portada — aspect-square para mostrar la imagen completa */}
       <Link
         href={`/${locale}/product/${product.slug}`}
-        className="relative aspect-[4/3] overflow-hidden bg-surface-raised scanlines"
+        className="relative aspect-square overflow-hidden bg-surface-raised scanlines"
       >
         {imageUrl ? (
           <Image
@@ -54,9 +72,7 @@ export function ProductCard({ product, locale }: ProductCardProps) {
             </svg>
           </div>
         )}
-        {/* Gold gradient bottom */}
         <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-black/60 to-transparent z-10" />
-        {/* INSERT COIN badge */}
         <div className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           <span
             className="font-pixel bg-gold text-black px-2 py-1 blink"
