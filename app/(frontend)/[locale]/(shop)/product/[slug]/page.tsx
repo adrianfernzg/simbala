@@ -82,9 +82,9 @@ export default async function ProductPage({ params }: Props) {
 
   const category = typeof product.category === 'object' ? product.category : null
 
-  // Imágenes del producto — usar versión card (800×600) de Cloudinary
+  // Imágenes del producto — URL original de Cloudinary (sin recorte)
   const images: Array<string | null> = (product.images ?? []).map((img: Record<string, unknown>) =>
-    getImageUrl(img.image as Media | string | null, 'card')
+    getImageUrl(img.image as Media | string | null, 'original')
   )
 
   // Vinilos
