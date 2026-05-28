@@ -10,11 +10,22 @@ type Props = {
   params: Promise<{ locale: string; slug: string }>
 }
 
-type Media = { url?: string | null; alt?: string }
+type MediaSizes = {
+  card?: { url?: string | null }
+  og?: { url?: string | null }
+}
+type Media = { url?: string | null; alt?: string; sizes?: MediaSizes }
 
-function getImageUrl(img: Media | string | null | undefined): string | null {
+function getImageUrl(
+  img: Media | string | null | undefined,
+  prefer: 'card' | 'og' | 'original' = 'card',
+): string | null {
   if (!img) return null
   if (typeof img === 'string') return img
+  if (prefer !== 'original') {
+    const sized = img.sizes?.[prefer]?.url
+    if (sized) return sized
+  }
   return img.url ?? null
 }
 
@@ -32,7 +43,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!product) return { title: 'Modelo no encontrado' }
 
   const firstImage = product.images?.[0]?.image
-  const imageUrl = getImageUrl(firstImage as Media | string | null)
+  const imageUrl = getImageUrl(firstImage as Media | string | null, 'og')
 
   return {
     title: product.name as string,
@@ -71,16 +82,16 @@ export default async function ProductPage({ params }: Props) {
 
   const category = typeof product.category === 'object' ? product.category : null
 
-  // Imágenes del producto
+  // Imágenes del producto — usar versión card (800×600) de Cloudinary
   const images: Array<string | null> = (product.images ?? []).map((img: Record<string, unknown>) =>
-    getImageUrl(img.image as Media | string | null)
+    getImageUrl(img.image as Media | string | null, 'card')
   )
 
   // Vinilos
   const vinyls: VinylOption[] = (product.vinyls ?? []).map((v: Record<string, unknown>) => ({
     id: String(v.id),
     name: v.name as string,
-    imageUrl: getImageUrl(v.image as Media | string | null),
+    imageUrl: getImageUrl(v.image as Media | string | null, 'card'),
     priceModifier: Number(v.priceModifier ?? 0),
   }))
 
@@ -92,7 +103,7 @@ export default async function ProductPage({ params }: Props) {
     price: Number(e.price),
     type: e.type as 'checkbox' | 'select' | 'text',
     placeholder: (e.placeholder as string | undefined) ?? null,
-    imageUrl: getImageUrl(e.image as Media | string | null),
+    imageUrl: getImageUrl(e.image as Media | string | null, 'card'),
     options: ((e.options ?? []) as Array<Record<string, unknown>>).map(
       (o): SelectOption => ({
         id: String(o.id),

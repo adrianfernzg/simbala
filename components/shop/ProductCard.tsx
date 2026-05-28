@@ -1,7 +1,8 @@
 import Image from 'next/image'
 import Link from 'next/link'
 
-type Media = { url?: string | null; alt?: string }
+type MediaSizes = { card?: { url?: string | null }; thumbnail?: { url?: string | null } }
+type Media = { url?: string | null; alt?: string; sizes?: MediaSizes }
 type Category = { id: string; name: string; slug: string }
 
 type PayloadProduct = {
@@ -24,7 +25,9 @@ export function ProductCard({ product, locale }: ProductCardProps) {
   )
 
   const firstImage = product.images?.[0]?.image
-  const imageUrl = typeof firstImage === 'object' ? firstImage?.url : null
+  const imageUrl = typeof firstImage === 'object'
+    ? (firstImage?.sizes?.card?.url ?? firstImage?.url ?? null)
+    : null
   const imageAlt = typeof firstImage === 'object' ? (firstImage?.alt ?? product.name) : product.name
   const categoryName = typeof product.category === 'object' ? product.category.name : ''
 
