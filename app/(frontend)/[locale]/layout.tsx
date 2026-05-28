@@ -1,9 +1,17 @@
 import type { Metadata } from 'next'
+import { Bungee } from 'next/font/google'
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 import { routing } from '@/i18n/routing'
 import '../../globals.css'
+
+const bungee = Bungee({
+  weight: '400',
+  subsets: ['latin'],
+  variable: '--font-bungee',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: {
@@ -38,7 +46,7 @@ export default async function LocaleLayout({ children, params }: Props) {
   const messages = await getMessages()
 
   return (
-    <html lang={locale} className="dark">
+    <html lang={locale} className={`dark ${bungee.variable}`}>
       <body className="antialiased">
         <NextIntlClientProvider messages={messages}>
           {children}

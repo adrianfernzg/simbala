@@ -17,13 +17,6 @@
   font-display: swap;
 }
 
-@font-face {
-  font-family: 'Bungee';
-  src: url('/fonts/bungee.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
 
 @theme {
   /* Brand colors */
@@ -46,7 +39,7 @@
   /* Fonts — using names directly, no CSS variable chain */
   --font-sans: 'VT323', monospace;
   --font-pixel: 'Press Start 2P', monospace;
-  --font-arcade: 'Bungee', sans-serif;
+  --font-arcade: var(--font-bungee), sans-serif;
   --font-retro: 'VT323', monospace;
 }
 
@@ -76,17 +69,60 @@ body {
 
 /* ── Pixel border ──────────────────────────────────────── */
 .pixel-box {
-  border: 2px solid var(--color-border);
-  box-shadow: 3px 3px 0 0 var(--color-border);
-  transition: box-shadow 0.15s, border-color 0.15s;
+  border: 2px solid var(--color-gold-muted);
+  box-shadow:
+    3px 3px 0 0 var(--color-gold-muted),
+    0 0 8px rgba(212, 160, 23, 0.22),
+    0 0 22px rgba(212, 160, 23, 0.08);
+  transition: box-shadow 0.2s, border-color 0.2s;
 }
 .pixel-box:hover {
   border-color: var(--color-gold);
-  box-shadow: 3px 3px 0 0 var(--color-gold-muted);
+  box-shadow:
+    3px 3px 0 0 var(--color-gold-muted),
+    0 0 14px rgba(212, 160, 23, 0.6),
+    0 0 36px rgba(212, 160, 23, 0.22);
 }
 .pixel-box-gold {
   border: 2px solid var(--color-gold);
-  box-shadow: 3px 3px 0 0 var(--color-gold-muted);
+  box-shadow:
+    3px 3px 0 0 var(--color-gold-muted),
+    0 0 12px rgba(212, 160, 23, 0.55),
+    0 0 30px rgba(212, 160, 23, 0.22);
+}
+
+/* ── Neon divider line (standalone element) ────────────── */
+.neon-divider {
+  height: 2px;
+  width: 100%;
+  background: var(--color-gold);
+  border: none;
+  display: block;
+  box-shadow:
+    0 0 5px rgba(212, 160, 23, 1),
+    0 0 14px rgba(212, 160, 23, 0.75),
+    0 0 30px rgba(212, 160, 23, 0.45),
+    0 0 60px rgba(212, 160, 23, 0.2);
+}
+
+/* ── Neon left accent bar ──────────────────────────────── */
+.neon-accent-l {
+  position: relative;
+  padding-left: 1.5rem;
+}
+.neon-accent-l::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 2px;
+  height: 100%;
+  background: var(--color-gold);
+  box-shadow:
+    0 0 5px rgba(212, 160, 23, 1),
+    0 0 14px rgba(212, 160, 23, 0.75),
+    0 0 28px rgba(212, 160, 23, 0.4),
+    4px 0 10px rgba(212, 160, 23, 0.2);
 }
 
 /* ── Scanlines overlay ─────────────────────────────────── */
@@ -170,6 +206,30 @@ body {
   bottom: 6px;
   right: 6px;
   border-width: 0 2px 2px 0;
+}
+
+/* ── Starfield background ──────────────────────────────── */
+.bg-starfield {
+  background-color: var(--color-bg);
+  background-image:
+    /* Dense small gold dots */
+    radial-gradient(rgba(212, 160, 23, 0.18) 1px, transparent 1px),
+    /* Medium white stars */
+    radial-gradient(rgba(255, 255, 255, 0.22) 1px, transparent 1px),
+    /* Sparse larger gold stars */
+    radial-gradient(rgba(212, 160, 23, 0.38) 1.5px, transparent 1.5px),
+    /* Bright white accent stars */
+    radial-gradient(rgba(255, 255, 255, 0.28) 1.5px, transparent 1.5px);
+  background-size:
+    24px 24px,
+    60px 60px,
+    100px 100px,
+    140px 140px;
+  background-position:
+    0 0,
+    18px 30px,
+    45px 15px,
+    90px 60px;
 }
 
 /* ── Scrollbar ─────────────────────────────────────────── */

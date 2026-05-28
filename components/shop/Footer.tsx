@@ -9,7 +9,7 @@ export async function Footer({ locale }: FooterProps) {
   const t = await getTranslations({ locale, namespace: 'navigation' })
 
   return (
-    <footer className="border-t-2 border-border bg-surface">
+    <footer className="bg-surface" style={{ borderTop: '2px solid var(--color-gold)', boxShadow: '0 -1px 10px rgba(212,160,23,0.5), 0 -1px 28px rgba(212,160,23,0.2)' }}>
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-12 sm:grid-cols-3">
 
@@ -74,7 +74,8 @@ export async function Footer({ locale }: FooterProps) {
         </div>
 
         {/* Bottom */}
-        <div className="mt-12 border-t-2 border-border pt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
+        <div className="neon-divider mt-12" />
+        <div className="pt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
           <p className="text-xs text-text-muted">
             © {new Date().getFullYear()} Simbala Arcade Valencia. Todos los derechos reservados.
           </p>

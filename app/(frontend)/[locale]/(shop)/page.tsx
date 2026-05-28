@@ -33,7 +33,7 @@ export default async function HomePage({ params }: Props) {
   return (
     <>
       {/* ── Hero ─────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden border-b-2 border-border scanlines px-4 py-28 sm:px-6 lg:px-8">
+      <section className="relative overflow-hidden scanlines px-4 py-28 sm:px-6 lg:px-8" style={{ borderBottom: '2px solid var(--color-gold)', boxShadow: '0 2px 10px rgba(212,160,23,0.5), 0 2px 30px rgba(212,160,23,0.2)' }}>
         {/* Tetris animation */}
         <TetrisBackground />
 
@@ -113,7 +113,8 @@ export default async function HomePage({ params }: Props) {
       </section>
 
       {/* ── Ventajas ─────────────────────────────────────────── */}
-      <section className="border-t-2 border-border px-4 py-20 sm:px-6 lg:px-8">
+      <div className="neon-divider" />
+      <section className="bg-starfield px-4 py-20 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <ul className="grid grid-cols-1 gap-6 sm:grid-cols-3">
             {[
@@ -136,7 +137,7 @@ export default async function HomePage({ params }: Props) {
                 desc: 'Pago 100% seguro con Stripe. Garantía en todos los productos.',
               },
             ].map(({ icon, number, title, desc }) => (
-              <li key={number} className="pixel-box pixel-corners p-8 flex flex-col gap-3">
+              <li key={number} className="pixel-box pixel-corners p-8 flex flex-col gap-3 bg-surface">
                 <div className="flex items-center gap-3">
                   <span className="text-2xl">{icon}</span>
                   <span className="font-pixel text-gold" style={{ fontSize: '8px' }}>{number}</span>
@@ -150,7 +151,8 @@ export default async function HomePage({ params }: Props) {
       </section>
 
       {/* ── CTA final ────────────────────────────────────────── */}
-      <section className="border-t-2 border-border px-4 py-24 sm:px-6 lg:px-8">
+      <div className="neon-divider" />
+      <section className="px-4 py-24 sm:px-6 lg:px-8">
         <BorderOrb className="mx-auto max-w-3xl text-center p-12">
           <p className="font-pixel text-gold glow-gold mb-5" style={{ fontSize: '9px', letterSpacing: '0.2em' }}>
             ✦ PERSONALIZACIÓN ✦

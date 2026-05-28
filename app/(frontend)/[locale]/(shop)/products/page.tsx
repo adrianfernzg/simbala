@@ -50,89 +50,109 @@ export default async function ProductsPage({ params, searchParams }: Props) {
   })
 
   const totalPages = Math.ceil(totalDocs / pageSize)
+  const count = String(totalDocs).padStart(2, '0')
 
   return (
-    <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-      <div className="border-b border-border pb-10">
-        <p className="text-[10px] uppercase tracking-[0.4em] text-gold">La Colección</p>
-        <h1 className="mt-3 text-4xl font-bold text-text-primary">
-          {locale === 'es' ? 'Modelos' : 'Models'}
-        </h1>
-        <p className="mt-3 text-sm text-text-secondary">
-          {totalDocs} {totalDocs === 1 ? 'modelo disponible' : 'modelos disponibles'}
-        </p>
-      </div>
+    <>
+      {/* ── Header ─────────────────────────────────────────── */}
+      <div className="mx-auto max-w-7xl px-4 pt-16 pb-0 sm:px-6 lg:px-8">
+        <div className="relative pb-10">
+          {/* Decorative numeric counter */}
+          <div className="absolute top-0 right-0 text-right select-none" aria-hidden="true">
+            <p className="font-pixel text-gold-muted" style={{ fontSize: '7px', letterSpacing: '0.2em' }}>
+              {locale === 'es' ? 'MODELOS' : 'MODELS'}
+            </p>
+            <p className="font-arcade text-6xl text-gold glow-gold leading-none mt-1">{count}</p>
+          </div>
 
-      {categories.length > 0 && (
-        <nav aria-label="Filtro por categoría" className="mt-8 flex flex-wrap items-center gap-2">
-          <span className="text-[10px] uppercase tracking-widest text-text-muted mr-2">
-            {locale === 'es' ? 'Filtrar:' : 'Filter:'}
-          </span>
-          <a
-            href={`/${locale}/products`}
-            className={[
-              'px-4 py-1.5 text-xs font-medium uppercase tracking-widest transition-all duration-200',
-              !categoria
-                ? 'bg-gold text-black'
-                : 'border border-border text-text-secondary hover:border-gold hover:text-gold',
-            ].join(' ')}
-          >
-            {locale === 'es' ? 'Todos' : 'All'}
-          </a>
-          {categories.map((cat) => (
-            <a
-              key={cat.id}
-              href={`/${locale}/products?categoria=${cat.slug}`}
-              className={[
-                'px-4 py-1.5 text-xs font-medium uppercase tracking-widest transition-all duration-200',
-                categoria === cat.slug
-                  ? 'bg-gold text-black'
-                  : 'border border-border text-text-secondary hover:border-gold hover:text-gold',
-              ].join(' ')}
-            >
-              {cat.name as string}
-            </a>
-          ))}
-        </nav>
-      )}
-
-      {products.length > 0 ? (
-        <>
-          <ul className="mt-10 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {products.map((product) => (
-              <li key={product.id}>
-                <ProductCard product={product as Parameters<typeof ProductCard>[0]['product']} locale={locale} />
-              </li>
-            ))}
-          </ul>
-
-          {totalPages > 1 && (
-            <nav aria-label="Paginación" className="mt-14 flex justify-center gap-1">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                <a
-                  key={p}
-                  href={`/${locale}/products?${categoria ? `categoria=${categoria}&` : ''}pagina=${p}`}
-                  className={[
-                    'flex h-9 w-9 items-center justify-center text-xs font-medium uppercase tracking-wider transition-all',
-                    p === page
-                      ? 'bg-gold text-black'
-                      : 'border border-border text-text-secondary hover:border-gold hover:text-gold',
-                  ].join(' ')}
-                  aria-current={p === page ? 'page' : undefined}
-                >
-                  {p}
-                </a>
-              ))}
-            </nav>
-          )}
-        </>
-      ) : (
-        <div className="mt-20 border border-border py-24 text-center">
-          <p className="text-xs uppercase tracking-widest text-text-muted">
-            No hay modelos disponibles todavía
+          <p className="text-[10px] uppercase tracking-[0.4em] text-gold">
+            {locale === 'es' ? 'La Colección' : 'The Collection'}
+          </p>
+          <h1 className="mt-3 font-arcade text-4xl uppercase text-text-primary">
+            {locale === 'es' ? 'Modelos' : 'Models'}
+          </h1>
+          <p className="mt-3 text-sm text-text-secondary max-w-lg">
+            {locale === 'es'
+              ? 'Máquinas recreativas artesanales. Fabricadas en Valencia con materiales premium.'
+              : 'Handcrafted arcade machines. Built in Valencia with premium materials.'}
           </p>
         </div>
-      )}
-    </section>
+        <div className="neon-divider" />
+      </div>
+
+      {/* ── Filtros + grid ─────────────────────────────────── */}
+      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        {categories.length > 0 && (
+          <nav aria-label="Filtro por categoría" className="mb-10 flex flex-wrap items-center gap-2">
+            <span className="font-pixel text-text-muted mr-2" style={{ fontSize: '7px', letterSpacing: '0.15em' }}>
+              {locale === 'es' ? '▸ FILTRAR' : '▸ FILTER'}
+            </span>
+            <a
+              href={`/${locale}/products`}
+              className={[
+                'px-4 py-1.5 text-xs font-medium uppercase tracking-widest transition-all duration-200',
+                !categoria
+                  ? 'bg-gold text-black'
+                  : 'border border-gold/30 text-text-secondary hover:border-gold hover:text-gold',
+              ].join(' ')}
+            >
+              {locale === 'es' ? 'Todos' : 'All'}
+            </a>
+            {categories.map((cat) => (
+              <a
+                key={cat.id}
+                href={`/${locale}/products?categoria=${cat.slug}`}
+                className={[
+                  'px-4 py-1.5 text-xs font-medium uppercase tracking-widest transition-all duration-200',
+                  categoria === cat.slug
+                    ? 'bg-gold text-black'
+                    : 'border border-gold/30 text-text-secondary hover:border-gold hover:text-gold',
+                ].join(' ')}
+              >
+                {cat.name as string}
+              </a>
+            ))}
+          </nav>
+        )}
+
+        {products.length > 0 ? (
+          <>
+            <ul className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+              {products.map((product) => (
+                <li key={product.id}>
+                  <ProductCard product={product as Parameters<typeof ProductCard>[0]['product']} locale={locale} />
+                </li>
+              ))}
+            </ul>
+
+            {totalPages > 1 && (
+              <nav aria-label="Paginación" className="mt-14 flex justify-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                  <a
+                    key={p}
+                    href={`/${locale}/products?${categoria ? `categoria=${categoria}&` : ''}pagina=${p}`}
+                    className={[
+                      'flex h-9 w-9 items-center justify-center text-xs font-medium uppercase tracking-wider transition-all',
+                      p === page
+                        ? 'bg-gold text-black'
+                        : 'border border-gold/30 text-text-secondary hover:border-gold hover:text-gold',
+                    ].join(' ')}
+                    aria-current={p === page ? 'page' : undefined}
+                  >
+                    {p}
+                  </a>
+                ))}
+              </nav>
+            )}
+          </>
+        ) : (
+          <div className="pixel-box pixel-corners py-24 text-center">
+            <p className="font-pixel text-text-muted" style={{ fontSize: '9px', letterSpacing: '0.1em' }}>
+              {locale === 'es' ? 'NO HAY MODELOS DISPONIBLES' : 'NO MODELS AVAILABLE'}
+            </p>
+          </div>
+        )}
+      </section>
+    </>
   )
 }
