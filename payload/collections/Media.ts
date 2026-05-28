@@ -22,7 +22,7 @@ async function uploadToCloudinary(
   filePath: string,
   mimeType: string,
   filename: string,
-): Promise<{ url: string; publicId: string; width?: number; height?: number }> {
+): Promise<{ url: string; publicId: string }> {
   configureCloudinary()
   const buffer = await readFile(filePath)
   const dataUri = `data:${mimeType};base64,${buffer.toString('base64')}`
@@ -33,12 +33,7 @@ async function uploadToCloudinary(
     resource_type: 'image',
     public_id: filename.replace(/\.[^.]+$/, ''),
   })
-  return {
-    url: result.secure_url,
-    publicId: result.public_id,
-    width: result.width,
-    height: result.height,
-  }
+  return { url: result.secure_url, publicId: result.public_id }
 }
 
 export const Media: CollectionConfig = {
@@ -59,45 +54,60 @@ export const Media: CollectionConfig = {
     delete: ({ req }) => req.user?.role === 'admin',
   },
   hooks: {
-    // Run BEFORE the INSERT so the returned data is written to DB directly —
-    // avoids the transaction-visibility issue that makes pool.query UPDATE
-    // match 0 rows when called from afterChange.
-    beforeChange: [
-      async ({ data, req, operation }) => {
-        if (process.env.NODE_ENV !== 'production') return data
-        if (operation !== 'create') return data
+    afterChange: [
+      async ({ doc, req, operation }) => {
+        if (process.env.NODE_ENV !== 'production') return doc
+        if (operation !== 'create') return doc
 
-        const filename = data.filename as string | undefined
-        const mimeType = (data.mimeType as string) ?? 'image/jpeg'
-        if (!filename) return data
+        const filename = doc.filename as string
+        const mimeType = (doc.mimeType as string) ?? 'image/jpeg'
+        if (!filename) return doc
 
         const filePath = join(STATIC_DIR, filename)
-        req.payload.logger.info({ msg: `[Media] beforeChange: uploading ${filename} to Cloudinary` })
 
-        try {
-          const result = await uploadToCloudinary(filePath, mimeType, filename)
-          req.payload.logger.info({ msg: `[Media] beforeChange: OK ${result.publicId}` })
+        // Capture dependencies before deferring — req may not be safe to
+        // access after the response is sent.
+        const pool = (req.payload.db as any).pool
+        const logger = req.payload.logger
 
-          // Delete local files immediately — they are no longer needed.
-          unlink(filePath).catch(() => {})
-          unlink(join(STATIC_DIR, filename.replace(/(\.[^.]+)$/, '-400x300$1'))).catch(() => {})
-          unlink(join(STATIC_DIR, filename.replace(/(\.[^.]+)$/, '-800x600$1'))).catch(() => {})
-          unlink(join(STATIC_DIR, filename.replace(/(\.[^.]+)$/, '-1200x630$1'))).catch(() => {})
+        logger.info({ msg: `[Media] scheduling Cloudinary upload for ${filename}` })
 
-          // The returned data is what Payload inserts into the DB.
-          return {
-            ...data,
-            url: result.url,
-            cloudinaryPublicId: result.publicId,
+        // Defer to the next event-loop tick so Payload's INSERT transaction
+        // has committed before we run the UPDATE. pool.query opens a fresh
+        // connection (READ COMMITTED) and would match 0 rows if the INSERT
+        // were still uncommitted.
+        setImmediate(async () => {
+          try {
+            const result = await uploadToCloudinary(filePath, mimeType, filename)
+            logger.info({ msg: `[Media] Cloudinary OK: ${result.publicId}` })
+
+            const dbResult = await pool.query(
+              `UPDATE payload.media SET url = $1, cloudinary_public_id = $2 WHERE filename = $3`,
+              [result.url, result.publicId, filename],
+            )
+            logger.info({
+              msg: `[Media] DB update: ${dbResult.rowCount} row(s) for filename=${filename}`,
+            })
+
+            if (dbResult.rowCount > 0) {
+              // Clean up local files only after confirming the DB was updated
+              unlink(filePath).catch(() => {})
+              unlink(join(STATIC_DIR, filename.replace(/(\.[^.]+)$/, '-400x300$1'))).catch(() => {})
+              unlink(join(STATIC_DIR, filename.replace(/(\.[^.]+)$/, '-800x600$1'))).catch(() => {})
+              unlink(join(STATIC_DIR, filename.replace(/(\.[^.]+)$/, '-1200x630$1'))).catch(() => {})
+            } else {
+              logger.warn({ msg: `[Media] UPDATE matched 0 rows — transaction may not be committed yet. Will not delete local files.` })
+            }
+          } catch (err) {
+            logger.error({ err, msg: `[Media] upload/update failed for ${filename}` })
           }
-        } catch (err) {
-          req.payload.logger.error({ err, msg: '[Media] beforeChange: Cloudinary upload failed' })
-          return data
-        }
+        })
+
+        return doc
       },
     ],
-    // afterRead: always reconstruct URLs from cloudinaryPublicId when present.
-    // Safety net for records that somehow have a wrong url in the DB.
+    // Reconstruct all URLs from cloudinaryPublicId on every read so admin
+    // panel and frontend always get Cloudinary URLs.
     afterRead: [
       ({ doc }) => {
         const raw = doc as Record<string, unknown>
