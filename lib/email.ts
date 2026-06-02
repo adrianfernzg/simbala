@@ -302,7 +302,7 @@ export async function sendPasswordResetEmail(data: {
 
 export async function sendOrderConfirmation(order: OrderEmailData): Promise<void> {
   const ref = order.orderId.slice(-8).toUpperCase()
-  const subject = `Pedido confirmado #${ref} — Simbala Arcade`
+  const subject = `Pedido confirmado — Simbala Arcade`
   const html = buildInvoiceHtml(order)
 
   if (!resend) {
