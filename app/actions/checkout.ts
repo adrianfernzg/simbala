@@ -1,10 +1,12 @@
 'use server'
 
+import { headers } from 'next/headers'
 import { auth } from '@/lib/auth'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { stripe } from '@/lib/stripe'
 import { checkoutSchema } from '@/lib/validations/checkout'
+import { checkoutRatelimit } from '@/lib/ratelimit'
 
 type ResolvedExtra = {
   extraId: string
@@ -22,6 +24,16 @@ export async function createCheckoutSession(
   locale: string = 'es'
 ): Promise<CheckoutResult> {
   try {
+    // Rate limiting
+    try {
+      const h = await headers()
+      const ip = h.get('x-forwarded-for') ?? 'anonymous'
+      const { success } = await checkoutRatelimit.limit(`checkout:${ip}`)
+      if (!success) return { error: 'Demasiadas solicitudes. Espera unos minutos e inténtalo de nuevo.' }
+    } catch {
+      // Si Upstash falla, continuar
+    }
+
     // Auth
     let session
     try {
