@@ -4,7 +4,7 @@ import { auth } from '@/lib/auth'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { Badge } from '@/components/ui/Badge'
-import { LogoutButton } from '@/components/shop/LogoutButton'
+import { AccountActions } from '@/components/shop/AccountActions'
 
 type Props = {
   params: Promise<{ locale: string }>
@@ -183,7 +183,7 @@ export default async function AccountPage({ params }: Props) {
 
       {/* Cerrar sesión */}
       <div className="mt-16 border-t border-border pt-8">
-        <LogoutButton locale={locale} />
+        <AccountActions locale={locale} />
       </div>
     </section>
   )

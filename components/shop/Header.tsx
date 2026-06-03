@@ -85,20 +85,21 @@ export function Header({ locale, userName }: HeaderProps) {
         <div className="flex items-center gap-1">
           <CartBadge locale={locale} label={t('cart')} />
 
-          <Link
-            href={`/${locale}/account`}
-            aria-label={t('account')}
-            className="p-2.5 text-text-secondary hover:text-gold transition-colors"
-          >
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-            </svg>
-          </Link>
-
           {userName ? (
-            <span className="ml-2 hidden text-[10px] tracking-widest text-gold font-pixel sm:block" style={{ fontSize: '8px' }}>
-              {userName.split(' ')[0].toUpperCase()}
-            </span>
+            <>
+              <Link
+                href={`/${locale}/account`}
+                aria-label={t('account')}
+                className="p-2.5 text-text-secondary hover:text-gold transition-colors"
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                </svg>
+              </Link>
+              <span className="hidden text-[10px] tracking-widest text-gold font-pixel sm:block" style={{ fontSize: '8px' }}>
+                {userName.split(' ')[0].toUpperCase()}
+              </span>
+            </>
           ) : (
             <Link
               href={`/${locale}/login`}

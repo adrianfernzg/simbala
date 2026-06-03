@@ -235,10 +235,10 @@ export async function sendVerificationEmail(data: {
   })
 }
 
-export async function sendPasswordResetEmail(data: {
+export async function sendPasswordResetCode(data: {
   email: string
   name: string
-  resetUrl: string
+  code: string
 }): Promise<void> {
   const html = `<!DOCTYPE html>
 <html lang="es">
@@ -257,21 +257,14 @@ export async function sendPasswordResetEmail(data: {
         <td style="padding:40px 40px 32px;">
           <p style="margin:0 0 16px;font-size:13px;color:#555;">Hola <strong style="color:#1a1a1a;">${data.name}</strong>,</p>
           <p style="margin:0 0 32px;font-size:13px;color:#555;line-height:1.6;">
-            Hemos recibido una solicitud para restablecer la contraseña de tu cuenta.
-            Este enlace expira en <strong>1 hora</strong>.
+            Usa el siguiente código para crear una nueva contraseña. Expira en <strong>1 hora</strong>.
           </p>
           <div style="text-align:center;margin:0 0 32px;">
-            <a href="${data.resetUrl}" style="display:inline-block;background:#C9A84C;color:#000000;font-size:12px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;text-decoration:none;padding:16px 40px;">
-              Restablecer contraseña
-            </a>
+            <div style="display:inline-block;background:#0d0d0d;border:1px solid #C9A84C;padding:20px 48px;">
+              <span style="font-size:36px;font-weight:700;color:#C9A84C;letter-spacing:0.2em;">${data.code}</span>
+            </div>
           </div>
-          <p style="margin:0 0 8px;font-size:11px;color:#bbb;text-align:center;">
-            O copia este enlace en tu navegador:
-          </p>
-          <p style="margin:0;font-size:10px;color:#bbb;text-align:center;word-break:break-all;">
-            ${data.resetUrl}
-          </p>
-          <p style="margin:24px 0 0;font-size:11px;color:#bbb;text-align:center;">
+          <p style="margin:0;font-size:11px;color:#bbb;text-align:center;">
             Si no solicitaste este cambio, ignora este mensaje. Tu contraseña no cambiará.
           </p>
         </td>
@@ -288,14 +281,14 @@ export async function sendPasswordResetEmail(data: {
 </html>`
 
   if (!resend) {
-    console.log(`\n📧 [RESET PASSWORD sin Resend] Para: ${data.email} | URL: ${data.resetUrl}\n`)
+    console.log(`\n📧 [RESET PASSWORD sin Resend] Para: ${data.email} | Código: ${data.code}\n`)
     return
   }
 
   await resend.emails.send({
     from: process.env.EMAIL_FROM ?? 'Simbala Arcade <noreply@simbala.es>',
     to: data.email,
-    subject: 'Restablecer contraseña · Simbala Arcade',
+    subject: `${data.code} — Código para restablecer contraseña · Simbala Arcade`,
     html,
   })
 }
