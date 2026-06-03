@@ -13,19 +13,18 @@ type Props = {
 type MediaSizes = {
   card?: { url?: string | null }
   og?: { url?: string | null }
+  full?: { url?: string | null }
 }
 type Media = { url?: string | null; alt?: string; sizes?: MediaSizes }
 
 function getImageUrl(
   img: Media | string | null | undefined,
-  prefer: 'card' | 'og' | 'original' = 'card',
+  prefer: 'card' | 'og' | 'full' = 'card',
 ): string | null {
   if (!img) return null
   if (typeof img === 'string') return img
-  if (prefer !== 'original') {
-    const sized = img.sizes?.[prefer]?.url
-    if (sized) return sized
-  }
+  const sized = img.sizes?.[prefer]?.url
+  if (sized) return sized
   return img.url ?? null
 }
 
@@ -82,9 +81,8 @@ export default async function ProductPage({ params }: Props) {
 
   const category = typeof product.category === 'object' ? product.category : null
 
-  // Imágenes del producto — URL original de Cloudinary (sin recorte)
   const images: Array<string | null> = (product.images ?? []).map((img: Record<string, unknown>) =>
-    getImageUrl(img.image as Media | string | null, 'original')
+    getImageUrl(img.image as Media | string | null, 'full')
   )
 
   // Vinilos
@@ -94,7 +92,7 @@ export default async function ProductPage({ params }: Props) {
     imageUrl: getImageUrl(v.image as Media | string | null, 'card'),
     priceModifier: Number(v.priceModifier ?? 0),
     images: ((v.images ?? []) as Array<Record<string, unknown>>)
-      .map((img) => getImageUrl(img.image as Media | string | null, 'original'))
+      .map((img) => getImageUrl(img.image as Media | string | null, 'full'))
       .filter((url): url is string => !!url),
   }))
 

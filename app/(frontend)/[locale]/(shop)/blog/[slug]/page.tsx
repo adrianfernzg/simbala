@@ -44,8 +44,11 @@ export default async function BlogPostPage({ params }: Props) {
   const post = docs[0]
   if (!post) notFound()
 
-  const coverImage = typeof post.coverImage === 'object' ? post.coverImage : null
-  const coverUrl = coverImage?.url ?? null
+  const coverImage = typeof post.coverImage === 'object'
+    ? post.coverImage as Record<string, unknown>
+    : null
+  const coverSizes = coverImage?.sizes as Record<string, { url?: string | null }> | undefined
+  const coverUrl = coverSizes?.full?.url ?? (coverImage?.url as string | null) ?? null
   const category = typeof post.category === 'object' ? post.category : null
 
   let contentHtml = ''

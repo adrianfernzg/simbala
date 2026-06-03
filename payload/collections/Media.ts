@@ -116,22 +116,27 @@ export const Media: CollectionConfig = {
         const cloud = process.env.CLOUDINARY_CLOUD_NAME
         return {
           ...doc,
-          url: `https://res.cloudinary.com/${cloud}/image/upload/${publicId}`,
+          url: `https://res.cloudinary.com/${cloud}/image/upload/f_auto,q_auto/${publicId}`,
           sizes: {
             thumbnail: {
-              url: cloudinaryTransformUrl(publicId, 'c_fill,w_400,h_300'),
+              url: cloudinaryTransformUrl(publicId, 'f_auto,q_auto,c_fill,w_400,h_300'),
               width: 400,
               height: 300,
             },
             card: {
-              url: cloudinaryTransformUrl(publicId, 'c_fill,w_600,h_600'),
+              url: cloudinaryTransformUrl(publicId, 'f_auto,q_auto,c_fill,w_600,h_600'),
               width: 600,
               height: 600,
             },
             og: {
-              url: cloudinaryTransformUrl(publicId, 'c_fill,w_1200,h_630'),
+              url: cloudinaryTransformUrl(publicId, 'f_auto,q_auto,c_fill,w_1200,h_630'),
               width: 1200,
               height: 630,
+            },
+            full: {
+              url: cloudinaryTransformUrl(publicId, 'f_auto,q_auto,c_limit,w_1200'),
+              width: 1200,
+              height: null,
             },
           },
         }

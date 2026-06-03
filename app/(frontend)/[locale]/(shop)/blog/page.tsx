@@ -62,8 +62,11 @@ export default async function BlogPage({ params }: Props) {
         {posts.length > 0 ? (
           <ul className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {posts.map((post) => {
-              const coverImage = typeof post.coverImage === 'object' ? post.coverImage : null
-              const coverUrl = coverImage?.url ?? null
+              const coverImage = typeof post.coverImage === 'object'
+                ? post.coverImage as Record<string, unknown>
+                : null
+              const coverSizes = coverImage?.sizes as Record<string, { url?: string | null }> | undefined
+              const coverUrl = coverSizes?.card?.url ?? (coverImage?.url as string | null) ?? null
               const category = typeof post.category === 'object' ? post.category : null
 
               return (
