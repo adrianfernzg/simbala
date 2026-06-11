@@ -22,6 +22,11 @@ export default function CheckoutPage({ params }: Props) {
   const router = useRouter()
 
   const [isPickup, setIsPickup] = useState(false)
+
+  const totalShipping = isPickup
+    ? 0
+    : items.reduce((sum, item) => sum + (item.shippingCost ?? 0) * item.quantity, 0)
+  const grandTotal = totalPrice + totalShipping
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -266,9 +271,22 @@ export default function CheckoutPage({ params }: Props) {
             })}
           </ul>
 
+          {!isPickup && totalShipping > 0 && (
+            <div className="mt-4 flex items-baseline justify-between text-xs">
+              <span className="uppercase tracking-widest text-text-muted">Productos</span>
+              <span className="text-text-primary">{formatPrice(totalPrice)}</span>
+            </div>
+          )}
+          {!isPickup && totalShipping > 0 && (
+            <div className="mt-2 flex items-baseline justify-between text-xs">
+              <span className="uppercase tracking-widest text-text-muted">Gastos de envío</span>
+              <span className="text-text-primary">{formatPrice(totalShipping)}</span>
+            </div>
+          )}
+
           <div className="mt-4 flex items-baseline justify-between">
             <span className="text-xs uppercase tracking-widest text-text-muted">Total</span>
-            <span className="text-2xl font-bold text-gold">{formatPrice(totalPrice)}</span>
+            <span className="text-2xl font-bold text-gold">{formatPrice(grandTotal)}</span>
           </div>
 
           <p className="mt-1 text-[10px] text-text-muted">IVA incluido</p>

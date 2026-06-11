@@ -51,7 +51,7 @@ export default function CartPage({ params }: Props) {
         <h1 className="mt-3 text-3xl font-bold text-text-primary">{t('title')}</h1>
       </div>
 
-      <div className="mt-10 grid grid-cols-1 gap-12 lg:grid-cols-3">
+      <div className="mt-10 grid grid-cols-1 gap-12 lg:grid-cols-3 lg:items-start">
         {/* Items */}
         <div className="lg:col-span-2 space-y-px bg-border">
           {items.map((item) => {
@@ -143,7 +143,7 @@ export default function CartPage({ params }: Props) {
               onClick={() => setIsDelivery(false)}
               className={[
                 'w-full px-4 py-3 text-left text-xs transition-all border-b border-border',
-                !isDelivery ? 'bg-surface-raised text-text-primary' : 'text-text-muted hover:text-text-secondary',
+                !isDelivery ? 'bg-bg text-text-primary' : 'text-text-muted hover:text-text-secondary',
               ].join(' ')}
             >
               <span className={['mr-2 inline-block h-2.5 w-2.5 border', !isDelivery ? 'border-gold bg-gold' : 'border-border'].join(' ')} />
@@ -154,7 +154,7 @@ export default function CartPage({ params }: Props) {
               onClick={() => setIsDelivery(true)}
               className={[
                 'w-full px-4 py-3 text-left text-xs transition-all',
-                isDelivery ? 'bg-surface-raised text-text-primary' : 'text-text-muted hover:text-text-secondary',
+                isDelivery ? 'bg-bg text-text-primary' : 'text-text-muted hover:text-text-secondary',
               ].join(' ')}
             >
               <span className={['mr-2 inline-block h-2.5 w-2.5 border', isDelivery ? 'border-gold bg-gold' : 'border-border'].join(' ')} />

@@ -76,7 +76,8 @@ export async function requestPasswordReset(data: unknown): Promise<Result> {
     }
 
     return { ok: true }
-  } catch {
+  } catch (err) {
+    console.error('[reset-password] requestPasswordReset threw:', err)
     return { error: 'Ha ocurrido un error. Inténtalo de nuevo.' }
   }
 }
