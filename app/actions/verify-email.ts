@@ -1,6 +1,8 @@
 'use server'
 
 import { headers } from 'next/headers'
+import { getPayload } from 'payload'
+import config from '@payload-config'
 import { db } from '@/lib/db'
 import { sendVerificationEmail } from '@/lib/email'
 import { codeRatelimit, emailRatelimit } from '@/lib/ratelimit'
@@ -28,13 +30,23 @@ export async function verifyEmailCode(data: unknown): Promise<Result> {
     const parsed = verifySchema.safeParse(data)
     if (!parsed.success) return { error: 'Código inválido.' }
 
-    // Rate limit per IP + per email to prevent brute force
-    const { success } = await codeRatelimit.limit(`verify:${ip}:${parsed.data.email}`)
-    if (!success) return { error: 'Demasiados intentos. Espera 15 minutos e inténtalo de nuevo.' }
+    try {
+      const { success } = await codeRatelimit.limit(`verify:${ip}:${parsed.data.email}`)
+      if (!success) return { error: 'Demasiados intentos. Espera 15 minutos e inténtalo de nuevo.' }
+    } catch {
+      // Si Upstash falla, continuar sin rate limiting
+    }
 
     const user = await db.user.findUnique({
       where: { email: parsed.data.email },
-      select: { id: true, emailVerified: true, verificationToken: true, verificationTokenExpiry: true },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        emailVerified: true,
+        verificationToken: true,
+        verificationTokenExpiry: true,
+      },
     })
 
     if (!user) return { error: 'No existe ninguna cuenta con ese email.' }
@@ -57,6 +69,23 @@ export async function verifyEmailCode(data: unknown): Promise<Result> {
       },
     })
 
+    // Crear cliente en Payload solo tras verificación exitosa
+    try {
+      const payload = await getPayload({ config })
+      await payload.create({
+        collection: 'clientes',
+        overrideAccess: true,
+        data: {
+          email: user.email,
+          name: user.name ?? '',
+          prismaUserId: user.id,
+          provider: 'credentials',
+        },
+      })
+    } catch {
+      // No bloquear la verificación si falla el sync con Payload
+    }
+
     return { ok: true }
   } catch {
     return { error: 'Ha ocurrido un error. Inténtalo de nuevo.' }
@@ -69,8 +98,12 @@ export async function resendVerificationCode(data: unknown): Promise<Result> {
     const parsed = resendSchema.safeParse(data)
     if (!parsed.success) return { error: 'Email inválido.' }
 
-    const { success } = await emailRatelimit.limit(`resend-verify:${ip}`)
-    if (!success) return { error: 'Has solicitado demasiados códigos. Espera 1 hora.' }
+    try {
+      const { success } = await emailRatelimit.limit(`resend-verify:${ip}`)
+      if (!success) return { error: 'Has solicitado demasiados códigos. Espera 1 hora.' }
+    } catch {
+      // Si Upstash falla, continuar sin rate limiting
+    }
 
     const user = await db.user.findUnique({
       where: { email: parsed.data.email },

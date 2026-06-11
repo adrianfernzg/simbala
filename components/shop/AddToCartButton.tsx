@@ -67,6 +67,7 @@ export function AddToCartButton({
       productSlug,
       productImage,
       basePrice,
+      shippingCost: 0,
       selectedExtras: cartExtras,
       quantity: 1,
     })

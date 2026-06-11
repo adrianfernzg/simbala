@@ -120,6 +120,36 @@ export const Products: CollectionConfig = {
       ],
     },
     {
+      name: 'furnitureTypes',
+      type: 'array',
+      label: 'Tipos de mueble',
+      admin: {
+        description: 'Define los tipos de mueble disponibles. El cliente elige uno al configurar la máquina.',
+      },
+      fields: [
+        {
+          name: 'name',
+          type: 'text',
+          required: true,
+          localized: true,
+          admin: { description: 'Nombre del tipo (ej: Bartop, Cocktail, Vertical, Cabina...)' },
+        },
+        {
+          name: 'priceModifier',
+          type: 'number',
+          defaultValue: 0,
+          min: 0,
+          admin: { description: 'Precio adicional en euros (0 si está incluido en el precio base)' },
+        },
+        {
+          name: 'image',
+          type: 'upload',
+          relationTo: 'media',
+          admin: { description: 'Imagen ilustrativa de este tipo de mueble' },
+        },
+      ],
+    },
+    {
       name: 'category',
       type: 'relationship',
       relationTo: 'categories',
@@ -216,6 +246,16 @@ export const Products: CollectionConfig = {
           },
         },
       ],
+    },
+    {
+      name: 'shippingCost',
+      type: 'number',
+      defaultValue: 0,
+      min: 0,
+      admin: {
+        position: 'sidebar',
+        description: 'Gastos de envío a domicilio (€). 0 = envío gratuito. Solo se aplica si el cliente elige envío, no recogida en taller.',
+      },
     },
     {
       name: 'published',

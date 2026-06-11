@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
+import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { useCart } from '@/components/cart/CartProvider'
 import { use } from 'react'
@@ -17,6 +18,12 @@ export default function CartPage({ params }: Props) {
   const { locale } = use(params)
   const t = useTranslations('cart')
   const { items, totalPrice, removeItem, updateQuantity } = useCart()
+  const [isDelivery, setIsDelivery] = useState(false)
+
+  const totalShipping = isDelivery
+    ? items.reduce((sum, item) => sum + (item.shippingCost ?? 0) * item.quantity, 0)
+    : 0
+  const grandTotal = totalPrice + totalShipping
 
   if (items.length === 0) {
     return (
@@ -129,28 +136,76 @@ export default function CartPage({ params }: Props) {
         <aside className="border border-border bg-surface p-6 h-fit">
           <p className="text-[10px] uppercase tracking-[0.3em] text-text-muted mb-6">Resumen</p>
 
+          {/* Toggle envío / recogida */}
+          <div className="mb-6 border border-border">
+            <button
+              type="button"
+              onClick={() => setIsDelivery(false)}
+              className={[
+                'w-full px-4 py-3 text-left text-xs transition-all border-b border-border',
+                !isDelivery ? 'bg-surface-raised text-text-primary' : 'text-text-muted hover:text-text-secondary',
+              ].join(' ')}
+            >
+              <span className={['mr-2 inline-block h-2.5 w-2.5 border', !isDelivery ? 'border-gold bg-gold' : 'border-border'].join(' ')} />
+              Recogida en taller · Valencia
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsDelivery(true)}
+              className={[
+                'w-full px-4 py-3 text-left text-xs transition-all',
+                isDelivery ? 'bg-surface-raised text-text-primary' : 'text-text-muted hover:text-text-secondary',
+              ].join(' ')}
+            >
+              <span className={['mr-2 inline-block h-2.5 w-2.5 border', isDelivery ? 'border-gold bg-gold' : 'border-border'].join(' ')} />
+              Envío a domicilio
+            </button>
+          </div>
+
           <div className="space-y-3 border-b border-border pb-6">
             {items.map((item) => {
               const unitPrice = item.basePrice + item.selectedExtras.reduce((s, e) => s + e.price, 0)
               return (
-                <div key={item.id} className="flex justify-between text-xs">
-                  <span className="text-text-secondary">
-                    {item.productName} × {item.quantity}
-                  </span>
-                  <span className="text-text-primary font-medium">
-                    {formatPrice(unitPrice * item.quantity)}
-                  </span>
+                <div key={item.id} className="text-xs space-y-1">
+                  <div className="flex justify-between">
+                    <span className="text-text-secondary">{item.productName} × {item.quantity}</span>
+                    <span className="text-text-primary font-medium">{formatPrice(unitPrice * item.quantity)}</span>
+                  </div>
+                  {isDelivery && (item.shippingCost ?? 0) > 0 && (
+                    <div className="flex justify-between text-text-muted">
+                      <span>+ Envío</span>
+                      <span>{formatPrice((item.shippingCost ?? 0) * item.quantity)}</span>
+                    </div>
+                  )}
+                  {isDelivery && (item.shippingCost ?? 0) === 0 && (
+                    <div className="text-gold" style={{ fontSize: '10px' }}>+ Envío gratuito</div>
+                  )}
                 </div>
               )
             })}
           </div>
 
+          {isDelivery && totalShipping > 0 && (
+            <div className="mt-4 flex items-baseline justify-between text-xs">
+              <span className="uppercase tracking-widest text-text-muted">Subtotal productos</span>
+              <span className="text-text-primary">{formatPrice(totalPrice)}</span>
+            </div>
+          )}
+          {isDelivery && totalShipping > 0 && (
+            <div className="mt-2 flex items-baseline justify-between text-xs">
+              <span className="uppercase tracking-widest text-text-muted">Gastos de envío</span>
+              <span className="text-text-primary">{formatPrice(totalShipping)}</span>
+            </div>
+          )}
+
           <div className="mt-4 flex items-baseline justify-between">
             <span className="text-xs uppercase tracking-widest text-text-muted">{t('total')}</span>
-            <span className="text-2xl font-bold text-gold">{formatPrice(totalPrice)}</span>
+            <span className="text-2xl font-bold text-gold">{formatPrice(grandTotal)}</span>
           </div>
 
-          <p className="mt-2 text-[10px] text-text-muted">IVA incluido. Envío gestionado manualmente.</p>
+          <p className="mt-2 text-[10px] text-text-muted">
+            IVA incluido.{isDelivery ? ' Envío gestionado manualmente.' : ' Recogida en taller · Valencia.'}
+          </p>
 
           <Link
             href={`/${locale}/checkout`}

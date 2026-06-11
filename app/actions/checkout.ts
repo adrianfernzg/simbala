@@ -80,14 +80,26 @@ export async function createCheckoutSession(
 
         type PayloadExtra = { id: string; name: string; price: number; type: string; options?: Array<{ id: string; label: string; value: string; priceModifier: number }> }
         type PayloadVinyl = { id: string; name: string; priceModifier: number }
+        type PayloadFurnitureType = { id: string; name: string; priceModifier: number }
 
         const productExtras = (product.extras ?? []) as PayloadExtra[]
         const productVinyls = (product.vinyls ?? []) as PayloadVinyl[]
+        const productFurnitureTypes = (product.furnitureTypes ?? []) as PayloadFurnitureType[]
 
         const resolvedExtras: ResolvedExtra[] = []
         let extrasTotal = 0
 
         for (const selected of item.extras) {
+          if (selected.extraId.startsWith('furniture_')) {
+            const furnitureId = selected.extraId.replace('furniture_', '')
+            const ft = productFurnitureTypes.find((f) => String(f.id) === furnitureId)
+            if (!ft) throw new Error(`Tipo de mueble no encontrado: ${furnitureId}`)
+            const price = Number(ft.priceModifier ?? 0)
+            resolvedExtras.push({ extraId: selected.extraId, extraName: `Mueble: ${ft.name}`, price, value: furnitureId })
+            extrasTotal += price
+            continue
+          }
+
           if (selected.extraId.startsWith('vinyl_')) {
             const vinylId = selected.extraId.replace('vinyl_', '')
             const vinyl = productVinyls.find((v) => String(v.id) === vinylId)
@@ -125,34 +137,54 @@ export async function createCheckoutSession(
         }
 
         const unitPrice = Number(product.basePrice) + extrasTotal
+        const shippingCost = Number(product.shippingCost ?? 0)
 
         const images = (product.images ?? []) as Array<{ image: { url?: string } | string }>
         const firstImageRaw = images[0]?.image
         const rawUrl = typeof firstImageRaw === 'object' ? firstImageRaw?.url : undefined
         const firstImageUrl = rawUrl?.startsWith('https://') ? rawUrl : undefined
 
-        return { product, resolvedExtras, quantity: item.quantity, unitPrice, firstImageUrl }
+        return { product, resolvedExtras, quantity: item.quantity, unitPrice, shippingCost, firstImageUrl }
       })
     )
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
     console.log('[checkout] Creating Stripe session for user:', session.user.id)
 
+    // Líneas de producto
+    const productLineItems = cartItems.map((item) => ({
+      quantity: item.quantity,
+      price_data: {
+        currency: 'eur',
+        unit_amount: Math.round(item.unitPrice * 100),
+        product_data: {
+          name: item.product.name as string,
+          ...(item.firstImageUrl ? { images: [item.firstImageUrl] } : {}),
+          description: item.resolvedExtras.map((e) => e.extraName).join(', ') || undefined,
+        },
+      },
+    }))
+
+    // Línea de envío (solo si no es recogida y algún producto tiene gastos de envío)
+    const totalShipping = isPickup
+      ? 0
+      : cartItems.reduce((sum, item) => sum + item.shippingCost * item.quantity, 0)
+
+    const shippingLineItem = !isPickup && totalShipping > 0
+      ? [{
+          quantity: 1,
+          price_data: {
+            currency: 'eur',
+            unit_amount: Math.round(totalShipping * 100),
+            product_data: { name: 'Gastos de envío' },
+          },
+        }]
+      : []
+
     const checkoutSession = await stripe.checkout.sessions.create({
       mode: 'payment',
       customer_email: session.user.email!,
-      line_items: cartItems.map((item) => ({
-        quantity: item.quantity,
-        price_data: {
-          currency: 'eur',
-          unit_amount: Math.round(item.unitPrice * 100),
-          product_data: {
-            name: item.product.name as string,
-            ...(item.firstImageUrl ? { images: [item.firstImageUrl] } : {}),
-            description: item.resolvedExtras.map((e) => e.extraName).join(', ') || undefined,
-          },
-        },
-      })),
+      line_items: [...productLineItems, ...shippingLineItem],
       metadata: {
         userId: session.user.id,
         cartData: JSON.stringify(

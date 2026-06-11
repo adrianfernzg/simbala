@@ -2,6 +2,7 @@ import { Ratelimit } from '@upstash/ratelimit'
 import { Redis } from '@upstash/redis'
 
 function makeRedis(): Redis | null {
+  if (process.env.NODE_ENV !== 'production') return null
   if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) return null
   return Redis.fromEnv()
 }

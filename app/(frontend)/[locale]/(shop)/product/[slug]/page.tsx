@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { Badge } from '@/components/ui/Badge'
-import { ProductConfigurator, type VinylOption, type ConfigExtra, type SelectOption } from '@/components/shop/ProductConfigurator'
+import { ProductConfigurator, type VinylOption, type FurnitureType, type ConfigExtra, type SelectOption } from '@/components/shop/ProductConfigurator'
 import { convertLexicalToHTML } from '@payloadcms/richtext-lexical/html'
 
 type Props = {
@@ -84,6 +84,16 @@ export default async function ProductPage({ params }: Props) {
   const images: Array<string | null> = (product.images ?? []).map((img: Record<string, unknown>) =>
     getImageUrl(img.image as Media | string | null, 'full')
   )
+
+  const shippingCost = Number(product.shippingCost ?? 0)
+
+  // Tipos de mueble
+  const furnitureTypes: FurnitureType[] = (product.furnitureTypes ?? []).map((f: Record<string, unknown>) => ({
+    id: String(f.id),
+    name: f.name as string,
+    priceModifier: Number(f.priceModifier ?? 0),
+    imageUrl: getImageUrl(f.image as Media | string | null, 'card'),
+  }))
 
   // Vinilos
   const vinyls: VinylOption[] = (product.vinyls ?? []).map((v: Record<string, unknown>) => ({
@@ -172,8 +182,10 @@ export default async function ProductPage({ params }: Props) {
         productName={product.name as string}
         productSlug={product.slug as string}
         basePrice={basePrice}
+        shippingCost={shippingCost}
         images={images}
         vinyls={vinyls}
+        furnitureTypes={furnitureTypes}
         extras={extras}
       />
 

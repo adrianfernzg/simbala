@@ -4,8 +4,6 @@ import { db } from '@/lib/db'
 import { registerSchema } from '@/lib/validations/auth'
 import { ratelimit } from '@/lib/ratelimit'
 import { sendVerificationEmail } from '@/lib/email'
-import { getPayload } from 'payload'
-import config from '@payload-config'
 
 function generateVerificationCode(): string {
   return Math.floor(100000 + Math.random() * 900000).toString()
@@ -78,21 +76,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'No se pudo enviar el email de verificación. Inténtalo de nuevo.' }, { status: 500 })
   }
 
-  try {
-    const payload = await getPayload({ config })
-    await payload.create({
-      collection: 'clientes',
-      overrideAccess: true,
-      data: {
-        email: user.email,
-        name: user.name ?? '',
-        prismaUserId: user.id,
-        provider: 'credentials',
-      },
-    })
-  } catch {
-    // No bloquear el registro si falla el sync con Payload
-  }
+  // El cliente en Payload se crea en verify-email.ts, tras verificación exitosa
 
   return NextResponse.json({ ok: true }, { status: 201 })
 }

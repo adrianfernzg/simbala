@@ -14,6 +14,13 @@ export type VinylOption = {
   images: Array<string>
 }
 
+export type FurnitureType = {
+  id: string
+  name: string
+  priceModifier: number
+  imageUrl: string | null
+}
+
 export type SelectOption = {
   id: string
   label: string
@@ -33,16 +40,16 @@ export type ConfigExtra = {
   imageUrl?: string | null
 }
 
-// La tira solo muestra imágenes del producto; los vinilos tienen su propio selector
-
 interface ProductConfiguratorProps {
   locale: string
   productId: string
   productName: string
   productSlug: string
   basePrice: number
+  shippingCost: number
   images: Array<string | null>
   vinyls: VinylOption[]
+  furnitureTypes: FurnitureType[]
   extras: ConfigExtra[]
 }
 
@@ -55,8 +62,10 @@ export function ProductConfigurator({
   productName,
   productSlug,
   basePrice,
+  shippingCost,
   images,
   vinyls,
+  furnitureTypes,
   extras,
 }: ProductConfiguratorProps) {
   const t = useTranslations('product')
@@ -68,6 +77,7 @@ export function ProductConfigurator({
 
   const [activeIdx, setActiveIdx] = useState(0)
   const [selectedVinylId, setSelectedVinylId] = useState<string | null>(null)
+  const [selectedFurnitureTypeId, setSelectedFurnitureTypeId] = useState<string | null>(null)
   const [checkedExtras, setCheckedExtras] = useState<Set<string>>(new Set())
   const [selectValues, setSelectValues] = useState<Map<string, string>>(new Map())
   const [textValues, setTextValues] = useState<Map<string, string>>(new Map())
@@ -108,8 +118,11 @@ export function ProductConfigurator({
     setActiveIdx(0)
   }
 
+  const selectedFurnitureType = furnitureTypes.find((f) => f.id === selectedFurnitureTypeId) ?? null
+
   // ── Precio ───────────────────────────────────────────────
   const vinylPrice = selectedVinyl?.priceModifier ?? 0
+  const furniturePrice = selectedFurnitureType?.priceModifier ?? 0
   const extrasPrice = extras.reduce((sum, extra) => {
     if (extra.type === 'checkbox' && checkedExtras.has(extra.id)) return sum + extra.price
     if (extra.type === 'select') {
@@ -122,11 +135,19 @@ export function ProductConfigurator({
     if (extra.type === 'text' && textValues.get(extra.id)?.trim()) return sum + extra.price
     return sum
   }, 0)
-  const totalPrice = basePrice + vinylPrice + extrasPrice
+  const totalPrice = basePrice + vinylPrice + furniturePrice + extrasPrice
 
   // ── Cart ─────────────────────────────────────────────────
   function buildCartExtras(): CartExtra[] {
     const result: CartExtra[] = []
+    if (selectedFurnitureType) {
+      result.push({
+        extraId: `furniture_${selectedFurnitureType.id}`,
+        extraName: `Mueble: ${selectedFurnitureType.name}`,
+        price: selectedFurnitureType.priceModifier,
+        value: selectedFurnitureType.id,
+      })
+    }
     if (selectedVinyl) {
       result.push({
         extraId: `vinyl_${selectedVinyl.id}`,
@@ -168,6 +189,7 @@ export function ProductConfigurator({
       productSlug,
       productImage: images[0] ?? null,
       basePrice,
+      shippingCost,
       selectedExtras: buildCartExtras(),
       quantity: 1,
     })
@@ -368,6 +390,67 @@ export function ProductConfigurator({
                         <p className="text-[9px] font-medium uppercase tracking-wider text-text-secondary line-clamp-1">{vinyl.name}</p>
                         <p className="text-[9px] text-gold">
                           {vinyl.priceModifier > 0 ? `+${fmt(vinyl.priceModifier)}` : 'Incluido'}
+                        </p>
+                      </div>
+                    </button>
+                  </li>
+                )
+              })}
+            </ul>
+          </section>
+        )}
+
+        {/* Selector de tipo de mueble */}
+        {furnitureTypes.length > 0 && (
+          <section className="mt-8">
+            <div className="mb-3 flex items-center justify-between">
+              <p className="text-[10px] uppercase tracking-[0.3em] text-text-muted">Tipo de mueble</p>
+              {selectedFurnitureType && (
+                <button
+                  type="button"
+                  onClick={() => setSelectedFurnitureTypeId(null)}
+                  className="text-[10px] uppercase tracking-widest text-text-muted hover:text-text-secondary transition-colors"
+                >
+                  Quitar
+                </button>
+              )}
+            </div>
+            <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4" aria-label="Tipos de mueble disponibles">
+              {furnitureTypes.map((ft) => {
+                const sel = selectedFurnitureTypeId === ft.id
+                return (
+                  <li key={ft.id}>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedFurnitureTypeId((prev) => prev === ft.id ? null : ft.id)}
+                      className={[
+                        'group w-full overflow-hidden border transition-all duration-200',
+                        sel ? 'border-gold ring-1 ring-gold/50' : 'border-border hover:border-gold/50',
+                      ].join(' ')}
+                      aria-pressed={sel}
+                    >
+                      <div className="relative aspect-square bg-surface-raised">
+                        {ft.imageUrl ? (
+                          <Image src={ft.imageUrl} alt={ft.name} fill className="object-cover" sizes="12vw" />
+                        ) : (
+                          <div className="flex h-full items-center justify-center">
+                            <span className="text-[8px] uppercase tracking-widest text-text-muted">Sin imagen</span>
+                          </div>
+                        )}
+                        {sel && (
+                          <div className="absolute inset-0 bg-gold/10 flex items-center justify-center">
+                            <div className="flex h-5 w-5 items-center justify-center rounded-full bg-gold">
+                              <svg className="h-3 w-3 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                              </svg>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-1.5 text-center">
+                        <p className="text-[9px] font-medium uppercase tracking-wider text-text-secondary line-clamp-1">{ft.name}</p>
+                        <p className="text-[9px] text-gold">
+                          {ft.priceModifier > 0 ? `+${fmt(ft.priceModifier)}` : 'Incluido'}
                         </p>
                       </div>
                     </button>

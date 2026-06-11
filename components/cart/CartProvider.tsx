@@ -16,6 +16,7 @@ export type CartItem = {
   productSlug: string
   productImage: string | null
   basePrice: number
+  shippingCost: number
   selectedExtras: CartExtra[]
   quantity: number
 }
