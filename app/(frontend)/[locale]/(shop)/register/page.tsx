@@ -43,7 +43,13 @@ export default function RegisterPage() {
     if (!res.ok) {
       const data = await res.json()
       setLoading(false)
-      setError(data.error?.formErrors?.[0] ?? data.error ?? 'Error al registrarse')
+      const err = data.error
+      if (err && typeof err === 'object') {
+        const fieldMsg = Object.values(err.fieldErrors ?? {}).flat()[0] as string | undefined
+        setError(fieldMsg ?? err.formErrors?.[0] ?? 'Error al registrarse')
+      } else {
+        setError(err ?? 'Error al registrarse')
+      }
       return
     }
 
