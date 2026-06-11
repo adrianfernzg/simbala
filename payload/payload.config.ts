@@ -19,6 +19,7 @@ import * as fixProductsImagesCascade from './migrations/20260528_fix_products_im
 import * as addCoverImageToProducts from './migrations/20260528_add_cover_image_to_products'
 import * as addOptionImage from './migrations/20260528_add_option_image'
 import * as addVinylImages from './migrations/20260528_add_vinyl_images'
+import * as addFurnitureTypesAndShipping from './migrations/20260611_add_furniture_types_and_shipping'
 
 export default buildConfig({
   serverURL: process.env.NEXT_PUBLIC_APP_URL ?? '',
@@ -48,6 +49,7 @@ export default buildConfig({
       { ...addCoverImageToProducts, name: '20260528_add_cover_image_to_products' },
       { ...addOptionImage, name: '20260528_add_option_image' },
       { ...addVinylImages, name: '20260528_add_vinyl_images' },
+      { ...addFurnitureTypesAndShipping, name: '20260611_add_furniture_types_and_shipping' },
     ],
   }),
   sharp,
