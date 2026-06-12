@@ -17,11 +17,14 @@ const requestSchema = z.object({
 const confirmSchema = z.object({
   email: z.string().email(),
   code: z.string().length(6),
-  password: z
-    .string()
-    .min(8)
-    .regex(/[A-Z]/, 'Debe contener al menos una mayúscula')
-    .regex(/[0-9]/, 'Debe contener al menos un número'),
+  password: z.string().refine(
+    (val) =>
+      val.length >= 8 &&
+      /[A-Z]/.test(val) &&
+      /[0-9]/.test(val) &&
+      /[^A-Za-z0-9]/.test(val),
+    { message: 'La contraseña debe contener una mayúscula, 8 caracteres y un carácter especial' }
+  ),
 })
 
 async function getIp(): Promise<string> {

@@ -64,19 +64,15 @@ export default function VerifyEmailPage() {
     if (savedEmail && savedPassword) {
       sessionStorage.removeItem('pendingLoginEmail')
       sessionStorage.removeItem('pendingLoginPassword')
-      const loginResult = await signIn('credentials', {
+      await signIn('credentials', {
         email: savedEmail,
         password: savedPassword,
         redirect: false,
       })
-      if (!loginResult?.error) {
-        router.push(`/${locale}`)
-        router.refresh()
-        return
-      }
     }
 
-    router.push(`/${locale}/login?verified=1`)
+    router.push(`/${locale}`)
+    router.refresh()
   }
 
   async function handleResend() {
